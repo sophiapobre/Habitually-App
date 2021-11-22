@@ -1,0 +1,22 @@
+{% extends "habitually/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <div class="container">
+
+        {# Check if user is signed in #}
+        {% if user.is_authenticated %}
+            <!-- Form to add a new habit -->
+            <form action="#" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <h4>New Habit</h4>
+                    <textarea class="form-control" id="new-habit-textarea" name="habit_name" rows="1"></textarea>
+                    <input type="submit" class="btn btn-dark" id="add-button" value="Add">
+                </div>
+            </form>
+        {% endif %}
+
+    </div>
+
+{% endblock %}
