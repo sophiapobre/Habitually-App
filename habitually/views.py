@@ -6,12 +6,15 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import User
+from .models import User, Category, Habit, Completion
 
 # Create your views here.
 
 def index(request):
-    return render(request, "habitually/index.html")
+    categories = Category.objects.all()
+    return render(request, "habitually/index.html", {
+        "categories": categories
+    })
 
 
 def login_view(request):
@@ -64,3 +67,17 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "habitually/register.html")
+
+
+# Add a new habit
+@login_required
+def add_habit(request):
+    # For a POST request, create a new habit
+    if request.method == "POST":
+        # Store data in Habit model fields and save
+        habit = Habit()
+        habit.creator = request.user
+        habit.name = request.POST["habit"]
+        habit.category = Category.objects.get(category=request.POST["category"])
+        habit.save()
+    return HttpResponseRedirect(reverse("index"))
