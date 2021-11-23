@@ -8,13 +8,19 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Category, Habit, Completion
 
+
 # Create your views here.
 
 def index(request):
-    categories = Category.objects.all()
-    return render(request, "habitually/index.html", {
-        "categories": categories
-    })
+    if request.user.is_authenticated:
+        categories = Category.objects.all()
+        habits = request.user.habits.all()
+        return render(request, "habitually/index.html", {
+            "categories": categories,
+            "habits": habits
+        })
+    else:
+        return render(request, "habitually/index.html")
 
 
 def login_view(request):
@@ -72,8 +78,18 @@ def register(request):
 # Add a new habit
 @login_required
 def add_habit(request):
-    # For a POST request, create a new habit
+    # Check if method is POST
     if request.method == "POST":
+        # Display error message if user has previously added the habit
+        user_habits = request.user.habits.all()
+        for user_habit in user_habits:
+            if request.POST["habit"].casefold() == user_habit.name.casefold():
+                return render(request, "habitually/index.html", {
+                    "categories": Category.objects.all(),
+                    "habits": request.user.habits.all(),
+                    "message": "ERROR: You've already added this habit!"
+                })
+
         # Store data in Habit model fields and save
         habit = Habit()
         habit.creator = request.user
