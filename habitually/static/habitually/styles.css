@@ -1,3 +1,8 @@
+/* Formatting for new habit form */
+.form-container {
+    margin: 20px auto;
+}
+
 /* Positioning for h3 tags */
 h4 {
     margin: 10px auto;
@@ -6,4 +11,47 @@ h4 {
 /* Formatting for add button */
 #add-button {
     margin: 10px auto;
+}
+
+/* Formatting for error message */
+.error-message {
+    font-weight: 500;
+    font-size: small;
+    color: rgb(167, 8, 8);
+}
+
+.calendar {
+    margin-top: 20px;
+}
+
+.calendar-first-row, .habit-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    font-weight: 500;
+    height: 50px;
+}
+
+.calendar-first-column {
+    width: 120px;
+}
+
+.day {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.habit {
+    width: 120px;
+    padding-right: 10px;
+}
+
+.habit-grid div {
+    position: relative;
+    margin-top: 12px;
+}
+
+.checkbox {
+    margin-left: 60%;
+    margin-top: 10%;
 }
