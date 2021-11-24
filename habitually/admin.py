@@ -7,7 +7,7 @@ class HabitAdmin(admin.ModelAdmin):
     list_display = ("id", "creator", "category", "name")
 
 class CompletionAdmin(admin.ModelAdmin):
-    list_display = ("id", "doer", "habit", "completion_status", "completion_time")
+    list_display = ("id", "doer", "habit", "status", "time")
 
 
 admin.site.register(User)
