@@ -23,5 +23,8 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
-    path("add_habit", views.add_habit, name="add_habit")
+    path("add_habit", views.add_habit, name="add_habit"),
+
+    # API Routes
+    path("habitually/<str:doer>/<int:habit_id>/<str:date>", views.toggle_habit_completion, name="toggle_habit_completion")
 ]
