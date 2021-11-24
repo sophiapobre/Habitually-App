@@ -44,45 +44,47 @@
             </div>
 
             <!-- Weekly calendar view -->
-            <div class="calendar">
-                <div class="calendar-first-row">
-                    <div class="calendar-first-column"></div>
-                    <div class="day" id="day0"></div>
-                    <div class="day" id="day1"></div>
-                    <div class="day" id="day2"></div>
-                    <div class="day" id="day3"></div>
-                    <div class="day" id="day4"></div>
-                    <div class="day" id="day5"></div>
-                    <div class="day" id="day6"></div>
-                </div>
+            {% if habits|length != 0 %}
+                <div class="calendar">
+                    <div class="calendar-first-row">
+                        <div class="calendar-first-column"></div>
+                        <div class="day" id="day0"></div>
+                        <div class="day" id="day1"></div>
+                        <div class="day" id="day2"></div>
+                        <div class="day" id="day3"></div>
+                        <div class="day" id="day4"></div>
+                        <div class="day" id="day5"></div>
+                        <div class="day" id="day6"></div>
+                    </div>
 
-                <div class="habit-grid">
-                    {% for habit in habits %}
-                        <div class="calendar-first-column habit {{ habit.category }}">{{ habit }}</div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="6">
-                        </div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="5">
-                        </div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="4">
-                        </div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="3">
-                        </div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="2">
-                        </div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="1">
-                        </div>
-                        <div class="checkbox">
-                            <input class="form-check-input {{ habit.category }}" type="checkbox" data-habit="{{ habit.name }}" data-daysAgo="0">
-                        </div>
-                    {% endfor %}
+                    <div class="habit-grid">
+                        {% for habit in habits %}
+                            <div class="calendar-first-column habit {{ habit.category }}">{{ habit }}</div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-6" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="6">
+                            </div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-5" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="5">
+                            </div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-4" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="4">
+                            </div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-3" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="3">
+                            </div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-2" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="2">
+                            </div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-1" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="1">
+                            </div>
+                            <div class="checkbox">
+                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-0" src="/static/habitually/icons/checkbox_unchecked.png" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="0">
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
         {% endif %}
 
     </div>
