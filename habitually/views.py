@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -12,6 +12,7 @@ from .models import User, Category, Habit, Completion
 # Create your views here.
 
 def index(request):
+    # Check if user is logged in
     if request.user.is_authenticated:
         categories = Category.objects.all()
         habits = request.user.habits.all()
@@ -25,7 +26,6 @@ def index(request):
 
 def login_view(request):
     if request.method == "POST":
-
         # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
@@ -97,3 +97,27 @@ def add_habit(request):
         habit.category = Category.objects.get(category=request.POST["category"])
         habit.save()
     return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
+def toggle_habit_completion(request, doer, habit_id, date):
+    # Confirm that doer is current user
+    if request.user.username == doer:
+        try:
+            # Check if Completion object for that habit, doer, and date already exists
+            completion = Completion.objects.get(habit=habit_id, doer=request.user, time=date)
+
+            # Change status to opposite of current status
+            completion.status = not completion.status
+            completion.save()
+        except Completion.DoesNotExist:
+            # Create a new completion object and set status to True
+            completion = Completion()
+            completion.doer = request.user
+            completion.habit = Habit.objects.get(pk=habit_id, creator=request.user)
+            completion.time = date
+            completion.status = True
+            completion.save()
+        return JsonResponse({"habit_id": habit_id, "date": completion.time, "status": completion.status})
+    else:
+        return JsonResponse({"error": "An error occurred."}, status=404)
