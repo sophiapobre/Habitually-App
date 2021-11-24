@@ -29,8 +29,8 @@ class Habit(models.Model):
 class Completion(models.Model):
     doer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="completion_status")
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="completion_status")
-    completion_time = models.DateTimeField(auto_now_add=False)
-    completion_status = models.BooleanField(null=False)
+    time = models.DateField(auto_now_add=False)
+    status = models.BooleanField(null=False)
 
     def __str__(self):
-        return f"{self.doer} | {self.habit} | Completed: {self.completion_status}"
+        return f"{self.doer} | {self.habit} |  Date: {self.time} Completed: {self.status}"
