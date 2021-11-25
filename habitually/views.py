@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -100,24 +100,31 @@ def add_habit(request):
 
 
 @login_required
-def toggle_habit_completion(request, doer, habit_id, date):
+def habit_completion_status(request, doer, habit_id, date, action):
     # Confirm that doer is current user
     if request.user.username == doer:
         try:
             # Check if Completion object for that habit, doer, and date already exists
             completion = Completion.objects.get(habit=habit_id, doer=request.user, time=date)
 
-            # Change status to opposite of current status
-            completion.status = not completion.status
-            completion.save()
+            if action == "get_status":
+                return JsonResponse({"status": completion.status})
+            elif action == "toggle_status":
+                # Change status to opposite of current status
+                completion.status = not completion.status
+                completion.save()
         except Completion.DoesNotExist:
-            # Create a new completion object and set status to True
-            completion = Completion()
-            completion.doer = request.user
-            completion.habit = Habit.objects.get(pk=habit_id, creator=request.user)
-            completion.time = date
-            completion.status = True
-            completion.save()
+
+            if action == "get_status":
+                return JsonResponse({"status": False})
+            elif action == "toggle_status":
+                # Create a new completion object and set status to True
+                completion = Completion()
+                completion.doer = request.user
+                completion.habit = Habit.objects.get(pk=habit_id, creator=request.user)
+                completion.time = date
+                completion.status = True
+                completion.save()
         return JsonResponse({"habit_id": habit_id, "date": completion.time, "status": completion.status})
     else:
         return JsonResponse({"error": "An error occurred."}, status=404)
