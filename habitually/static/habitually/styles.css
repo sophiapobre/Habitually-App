@@ -59,3 +59,7 @@ h4 {
 .checkbox-image {
     height: 25px;
 }
+
+.checkbox-image:hover {
+    cursor: pointer;
+}
