@@ -32,7 +32,7 @@ h4 {
 }
 
 .calendar-first-column {
-    width: 120px;
+    width: 200px;
 }
 
 .day {
@@ -42,8 +42,12 @@ h4 {
 }
 
 .habit {
-    width: 120px;
+    width: 200px;
     padding-right: 10px;
+}
+
+.habit:hover {
+    cursor: pointer;
 }
 
 .habit-grid div {
@@ -61,5 +65,22 @@ h4 {
 }
 
 .checkbox-image:hover {
+    cursor: pointer;
+}
+
+.delete-button-container {
+    width: 80px;
+}
+
+.delete-button {
+    float:inline-start;
+    height: 20px;
+    background-color: rgb(218, 211, 211);
+    border-radius: 50%;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.delete-button:hover {
     cursor: pointer;
 }
