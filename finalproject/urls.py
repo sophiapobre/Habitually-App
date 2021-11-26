@@ -26,5 +26,6 @@ urlpatterns = [
     path("add_habit", views.add_habit, name="add_habit"),
 
     # API Routes
-    path("habitually/<str:doer>/<int:habit_id>/<str:date>/<str:action>", views.habit_completion_status, name="habit_completion_status")
+    path("habitually/<str:doer>/<int:habit_id>/<str:date>/<str:action>", views.habit_completion_status, name="habit_completion_status"),
+    path("habitually/<str:doer>/<int:habit_id>/delete", views.delete_habit, name="delete_habit")
 ]
