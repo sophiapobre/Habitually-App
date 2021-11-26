@@ -20,6 +20,23 @@ h4 {
     color: rgb(167, 8, 8);
 }
 
+.category-dropdown, .weekly-calendar-nav {
+    height: 30px;
+    line-height: 15px;
+    margin-top: 15px;
+    margin-right: 3px;
+    margin-bottom: 15px;
+}
+
+#next-week-button:disabled {
+    cursor: not-allowed;
+}
+
+.category-dropdown {
+    font-size: 13px;
+    margin-right: 10px;
+}
+
 .calendar {
     margin-top: 20px;
 }
