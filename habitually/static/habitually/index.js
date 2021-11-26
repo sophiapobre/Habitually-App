@@ -11,6 +11,31 @@ document.addEventListener('DOMContentLoaded', function () {
       toggleCompletion(this.dataset.doer, this.dataset.habit, this.dataset.daysago);
     };
   });
+
+  // Create delete button image
+  const deleteButton = document.createElement('img');
+  deleteButton.className = 'delete-button';
+  deleteButton.src = '/static/habitually/icons/x_button.png';
+
+  // When each habit is hovered on, display delete button
+  document.querySelectorAll('.habit').forEach((habit) => {
+    habit.onmouseover = function() {
+      document.querySelector(`.habit-${this.dataset.habit}`).prepend(deleteButton);
+
+      // When delete button is clicked, delete the habit and relevant elements
+      deleteButton.onclick = function() {
+        deleteHabit(habit.dataset.doer, habit.dataset.habit);
+      };
+    };
+
+    // When cursor is no longer on both the habit and delete button, remove delete button
+    var elementsArray = [deleteButton, habit];
+    elementsArray.forEach((element) => {
+      element.onmouseleave = function() {
+        deleteButton.remove();
+      };
+    });
+  });
 });
 
 function loadDates() {
@@ -34,7 +59,7 @@ function loadDates() {
     var day = date.toFormat('dd');
     var dayOfWeek = date.weekday;
 
-    document.querySelector(`#day${6 - i}`).innerHTML = days_dict[dayOfWeek] + '<br>' + month + '/' + day;
+    document.getElementById(`${i}-days-ago`).innerHTML = days_dict[dayOfWeek] + '<br>' + month + '/' + day;
   }
 }
 
@@ -89,5 +114,21 @@ function toggleCompletion(doer, habitId, daysAgo) {
 
     // Change checkbox image to checked or unchecked depending on completion status
     setCheckboxImage(habitId, daysAgo, data.status);
+  });
+}
+
+function deleteHabit(doer, habitId) {
+  fetch(`habitually/${doer}/${habitId}/delete`)
+  .then((response) => response.json())
+  .then((data) => {
+    // Log data onto console
+    console.log(data);
+
+    // Remove relevant elements if success message is returned
+    if ('message' in data) {
+      document.querySelectorAll(`.habit-${habitId}`).forEach((element) => {
+        element.remove();
+      });
+    }
   });
 }
