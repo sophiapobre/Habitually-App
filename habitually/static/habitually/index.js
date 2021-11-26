@@ -1,44 +1,64 @@
+// Create a global counter variable for number of times previous button has been clicked
+var weeksAgo = 0;
+
+const daysPerWeek = 7;
+
 document.addEventListener('DOMContentLoaded', function () {
+  // Load calendar navigation buttons
+  loadCalendarNavButtons();
+
   // Load dates for the heading of the weekly calendar view
   loadDates();
 
   // Load checked or unchecked boxes depending on habit completion status
   loadCheckboxes();
 
+  // Load delete button
+  loadDeleteButton();
+
   // When each checkbox is clicked, toggle habit completion for that day
   document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
     checkbox.onclick = function() {
-      toggleCompletion(this.dataset.doer, this.dataset.habit, this.dataset.daysago);
+      // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
+      toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
     };
-  });
-
-  // Create delete button image
-  const deleteButton = document.createElement('img');
-  deleteButton.className = 'delete-button';
-  deleteButton.src = '/static/habitually/icons/x_button.png';
-
-  // When each habit is hovered on, display delete button
-  document.querySelectorAll('.habit').forEach((habit) => {
-    habit.onmouseover = function() {
-      document.querySelector(`.habit-${this.dataset.habit}`).prepend(deleteButton);
-
-      // When delete button is clicked, delete the habit and relevant elements
-      deleteButton.onclick = function() {
-        deleteHabit(habit.dataset.doer, habit.dataset.habit);
-      };
-    };
-
-    // When cursor is no longer on both the habit and delete button, remove delete button
-    var elementsArray = [deleteButton, habit];
-    elementsArray.forEach((element) => {
-      element.onmouseleave = function() {
-        deleteButton.remove();
-      };
-    });
   });
 });
 
-function loadDates() {
+function loadCalendarNavButtons() {
+  // By default (i.e. user is on current week), the next button should be disabled
+  document.querySelector('#next-week-button').disabled = true;
+
+  // When the previous button is clicked
+  document.querySelector('#previous-week-button').onclick = function() {
+    // Add 1 to counter variable
+    weeksAgo++;
+
+    // Load dates and checkboxes for the week, passing through counter variable
+    loadDates(weeksAgo);
+    loadCheckboxes(weeksAgo);
+
+    // Enable the next button
+    document.querySelector('#next-week-button').disabled = false;
+  };
+
+  // When the next button is clicked
+  document.querySelector('#next-week-button').onclick = function() {
+    // Subtract 1 from counter variable
+    weeksAgo--;
+
+    // Load dates and checkboxes for the week, passing through counter variable
+    loadDates(weeksAgo);
+    loadCheckboxes(weeksAgo);
+
+    // If the counter equals zero (i.e. user is on current week), disable the next button
+    if (weeksAgo === 0) {
+      document.querySelector('#next-week-button').disabled = true;
+    }
+  };
+}
+
+function loadDates(weeksAgo = 0) {
   // Dict containing keys to the days of the week
   var days_dict = {
     1: 'MON',
@@ -51,7 +71,7 @@ function loadDates() {
   };
 
   // Display day of week, month, and day in the first row of the weekly calendar view
-  for (var i = 0; i < 7; i++) {
+  for (var i = (0 + daysPerWeek * weeksAgo); i < (7 + daysPerWeek * weeksAgo); i++) {
     var today = luxon.DateTime.now();
 
     var date = today.minus({days: i});
@@ -59,11 +79,15 @@ function loadDates() {
     var day = date.toFormat('dd');
     var dayOfWeek = date.weekday;
 
-    document.getElementById(`${i}-days-ago`).innerHTML = days_dict[dayOfWeek] + '<br>' + month + '/' + day;
+    // Calculate column key of corresponding day heading in first row
+    var columnKey = i - daysPerWeek * weeksAgo;
+
+    // Display weekday and date in first row
+    document.getElementById(`${columnKey}`).innerHTML = days_dict[dayOfWeek] + '<br>' + month + '/' + day;
   }
 }
 
-function loadCheckboxes() {
+function loadCheckboxes(weeksAgo = 0) {
   // For each checkbox image, load the appropriate checkbox image (unchecked/checked)
   document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
     // Get given doer and habit ID
@@ -71,7 +95,7 @@ function loadCheckboxes() {
     var habitId = checkbox.dataset.habit;
 
     // Get date from given number of days ago
-    var daysAgo = checkbox.dataset.daysago;
+    var daysAgo = (parseInt(checkbox.dataset.columnkey) + daysPerWeek * weeksAgo);
     var date = getDate(daysAgo);
 
     // API call to get habit completion status
@@ -79,7 +103,7 @@ function loadCheckboxes() {
     .then((response) => response.json())
     .then((data) => {
       // Set checkbox image to checked or unchecked depending on completion status
-      setCheckboxImage(habitId, daysAgo, data.status);
+      setCheckboxImage(habitId, checkbox.dataset.columnkey, data.status);
     });
   });
 }
@@ -91,13 +115,13 @@ function getDate(daysAgo) {
   return date;
 }
 
-function setCheckboxImage(habitId, daysAgo, completionStatus) {
+function setCheckboxImage(habitId, columnKey, completionStatus) {
   // Set checkbox image to checked or unchecked depending on completion status
   if (completionStatus) {
-    document.querySelector(`#checkbox-${habitId}-${daysAgo}`).src = '/static/habitually/icons/checkbox_checked.png';
+    document.querySelector(`#checkbox-${habitId}-${columnKey}`).src = '/static/habitually/icons/checkbox_checked.png';
   }
   else {
-    document.querySelector(`#checkbox-${habitId}-${daysAgo}`).src = '/static/habitually/icons/checkbox_unchecked.png';
+    document.querySelector(`#checkbox-${habitId}-${columnKey}`).src = '/static/habitually/icons/checkbox_unchecked.png';
   }
 }
 
@@ -112,8 +136,38 @@ function toggleCompletion(doer, habitId, daysAgo) {
     // Log data onto console
     console.log(data);
 
+    // Calculate column key of corresponding checkbox
+    var columnKey = daysAgo - daysPerWeek * weeksAgo;
+
     // Change checkbox image to checked or unchecked depending on completion status
-    setCheckboxImage(habitId, daysAgo, data.status);
+    setCheckboxImage(habitId, columnKey, data.status);
+  });
+}
+
+function loadDeleteButton() {
+  // Create delete button image
+  const deleteButton = document.createElement('img');
+  deleteButton.className = 'delete-button';
+  deleteButton.src = '/static/habitually/icons/x_button.png';
+
+  document.querySelectorAll('.habit').forEach((habit) => {
+    // When each habit is hovered on, display delete button
+    habit.onmouseover = function() {
+      document.querySelector(`.habit-${this.dataset.habit}`).prepend(deleteButton);
+
+      // When delete button is clicked, delete the habit and relevant elements
+      deleteButton.onclick = function() {
+        deleteHabit(habit.dataset.doer, habit.dataset.habit);
+      };
+    };
+
+    // When cursor is no longer hovering on both the habit and delete button, remove delete button
+    var elementsArray = [deleteButton, habit];
+    elementsArray.forEach((element) => {
+      element.onmouseleave = function() {
+        deleteButton.remove();
+      };
+    });
   });
 }
 
