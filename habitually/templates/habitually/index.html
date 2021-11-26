@@ -43,15 +43,31 @@
                 </form>
             </div>
 
-            <!-- Weekly calendar view -->
+            {# Display weekly calendar view if user has added habits #}
             {% if habits|length != 0 %}
+                <!-- Dropdown button to filter by category -->
+                <div class="btn-group" role="group">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-dark dropdown-toggle category-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Category
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="#">Dropdown link</a>
+                        <a class="dropdown-item" href="#">Dropdown link</a>
+                    </div>
+                </div>
+
+                <!-- Buttons to navigate across weeks -->
+                <button type="button" class="btn btn-dark weekly-calendar-nav" id="previous-week-button">&lsaquo;</button>
+                <button type="button" class="btn btn-dark weekly-calendar-nav" id="next-week-button">&rsaquo;</button>
+
+                <!-- Weekly calendar view -->
                 <div class="calendar">
 
                     <!-- Display dates on the first row -->
                     <div class="calendar-first-row">
                         <div class="calendar-first-column"></div>
-                        {% for key in day_keys %}
-                            <div class="day" id="{{ key }}-days-ago"></div>
+                        {% for key in column_keys %}
+                            <div class="day" id="{{ key }}"></div>
                         {% endfor %}
                     </div>
 
@@ -59,9 +75,9 @@
                     <div class="habit-grid">
                         {% for habit in habits %}
                             <div class="habit {{ habit.category }} habit-{{ habit.id }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}">{{ habit }}</div>
-                            {% for key in day_keys %}
+                            {% for key in column_keys %}
                                 <div class="checkbox habit-{{ habit.id }}">
-                                    <img class="checkbox-image habit-{{ habit.id }}" id="checkbox-{{ habit.id }}-{{ key }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="{{ key }}">
+                                    <img class="checkbox-image habit-{{ habit.id }}" id="checkbox-{{ habit.id }}-{{ key }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-columnkey="{{ key }}">
                                 </div>
                             {% endfor %}
                         {% endfor %}
