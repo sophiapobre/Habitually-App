@@ -1,6 +1,7 @@
-// Create a global counter variable for number of times previous button has been clicked
+// Create a global variable to track which week the user is viewing
 var weeksAgo = 0;
 
+// Create a constant global variable to store the number of days in a week
 const daysPerWeek = 7;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -31,10 +32,10 @@ function loadCalendarNavButtons() {
 
   // When the previous button is clicked
   document.querySelector('#previous-week-button').onclick = function() {
-    // Add 1 to counter variable
+    // Add 1 to weeksAgo to indicate which week the user is viewing
     weeksAgo++;
 
-    // Load dates and checkboxes for the week, passing through counter variable
+    // Load dates and checkboxes for the week, passing through the number of weeks ago
     loadDates(weeksAgo);
     loadCheckboxes(weeksAgo);
 
@@ -44,14 +45,14 @@ function loadCalendarNavButtons() {
 
   // When the next button is clicked
   document.querySelector('#next-week-button').onclick = function() {
-    // Subtract 1 from counter variable
+    // Subtract 1 from weeksAgo to indicate which week the user is viewing
     weeksAgo--;
 
-    // Load dates and checkboxes for the week, passing through counter variable
+    // Load dates and checkboxes for the week, passing through the number of weeks ago
     loadDates(weeksAgo);
     loadCheckboxes(weeksAgo);
 
-    // If the counter equals zero (i.e. user is on current week), disable the next button
+    // If the user is on the current week, disable the next button
     if (weeksAgo === 0) {
       document.querySelector('#next-week-button').disabled = true;
     }
