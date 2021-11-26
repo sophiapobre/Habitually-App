@@ -46,47 +46,28 @@
             <!-- Weekly calendar view -->
             {% if habits|length != 0 %}
                 <div class="calendar">
+
+                    <!-- Display dates on the first row -->
                     <div class="calendar-first-row">
                         <div class="calendar-first-column"></div>
-                        <div class="day" id="day0"></div>
-                        <div class="day" id="day1"></div>
-                        <div class="day" id="day2"></div>
-                        <div class="day" id="day3"></div>
-                        <div class="day" id="day4"></div>
-                        <div class="day" id="day5"></div>
-                        <div class="day" id="day6"></div>
+                        {% for key in day_keys %}
+                            <div class="day" id="{{ key }}-days-ago"></div>
+                        {% endfor %}
                     </div>
 
+                    <!-- Display habit names and checkboxes -->
                     <div class="habit-grid">
                         {% for habit in habits %}
-                            <div class="calendar-first-column habit {{ habit.category }}">{{ habit }}</div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-6" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="6">
-                            </div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-5" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="5">
-                            </div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-4" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="4">
-                            </div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-3" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="3">
-                            </div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-2" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="2">
-                            </div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-1" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="1">
-                            </div>
-                            <div class="checkbox">
-                                <img class="checkbox-image" id="checkbox-{{ habit.id }}-0" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="0">
-                            </div>
+                            <div class="habit {{ habit.category }} habit-{{ habit.id }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}">{{ habit }}</div>
+                            {% for key in day_keys %}
+                                <div class="checkbox habit-{{ habit.id }}">
+                                    <img class="checkbox-image habit-{{ habit.id }}" id="checkbox-{{ habit.id }}-{{ key }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-daysago="{{ key }}">
+                                </div>
+                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
             {% endif %}
         {% endif %}
-
     </div>
-
 {% endblock %}
