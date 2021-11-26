@@ -16,9 +16,11 @@ def index(request):
     if request.user.is_authenticated:
         categories = Category.objects.all()
         habits = request.user.habits.all()
+        day_keys = list(reversed(range(0, 7)))
         return render(request, "habitually/index.html", {
             "categories": categories,
-            "habits": habits
+            "habits": habits,
+            "day_keys": day_keys
         })
     else:
         return render(request, "habitually/index.html")
@@ -87,6 +89,7 @@ def add_habit(request):
                 return render(request, "habitually/index.html", {
                     "categories": Category.objects.all(),
                     "habits": request.user.habits.all(),
+                    "day_keys": list(reversed(range(0, 7))),
                     "message": "ERROR: You've already added this habit!"
                 })
 
@@ -99,6 +102,22 @@ def add_habit(request):
     return HttpResponseRedirect(reverse("index"))
 
 
+# Delete an existing habit
+@login_required
+def delete_habit(request, doer, habit_id):
+    # Confirm that doer is current user
+    if request.user.username == doer:
+        try:
+            habit = Habit.objects.get(pk=habit_id, creator=request.user)
+            habit.delete()
+            return JsonResponse({"message": "Habit deleted successfully."})
+        except Habit.DoesNotExist:
+            return JsonResponse({"error": "Habit not found."}, status=404)
+    else:
+        return JsonResponse({"error": "An error occurred."}, status=404)
+
+
+# Get or toggle habit completion status
 @login_required
 def habit_completion_status(request, doer, habit_id, date, action):
     # Confirm that doer is current user
@@ -107,6 +126,7 @@ def habit_completion_status(request, doer, habit_id, date, action):
             # Check if Completion object for that habit, doer, and date already exists
             completion = Completion.objects.get(habit=habit_id, doer=request.user, time=date)
 
+            # Check user's requested action
             if action == "get_status":
                 return JsonResponse({"status": completion.status})
             elif action == "toggle_status":
@@ -115,6 +135,7 @@ def habit_completion_status(request, doer, habit_id, date, action):
                 completion.save()
         except Completion.DoesNotExist:
 
+            # Check user's requested action
             if action == "get_status":
                 return JsonResponse({"status": False})
             elif action == "toggle_status":
