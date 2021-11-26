@@ -16,11 +16,11 @@ def index(request):
     if request.user.is_authenticated:
         categories = Category.objects.all()
         habits = request.user.habits.all()
-        day_keys = list(reversed(range(0, 7)))
+        column_keys = list(reversed(range(0, 7)))
         return render(request, "habitually/index.html", {
             "categories": categories,
             "habits": habits,
-            "day_keys": day_keys
+            "column_keys": column_keys
         })
     else:
         return render(request, "habitually/index.html")
