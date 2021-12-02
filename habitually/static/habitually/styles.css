@@ -20,7 +20,7 @@ h4 {
     color: rgb(167, 8, 8);
 }
 
-.category-dropdown, .weekly-calendar-nav {
+.category-dropdown-button, .weekly-calendar-nav {
     height: 30px;
     line-height: 15px;
     margin-top: 15px;
@@ -32,7 +32,7 @@ h4 {
     cursor: not-allowed;
 }
 
-.category-dropdown {
+.category-dropdown-button {
     font-size: 13px;
     margin-right: 10px;
 }
@@ -100,4 +100,9 @@ h4 {
 
 .delete-button:hover {
     cursor: pointer;
+}
+
+.no-habits-message {
+    display: none;
+    text-align: center;
 }
