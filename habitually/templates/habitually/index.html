@@ -47,12 +47,14 @@
             {% if habits|length != 0 %}
                 <!-- Dropdown button to filter by category -->
                 <div class="btn-group" role="group">
-                    <button id="btnGroupDrop1" type="button" class="btn btn-dark dropdown-toggle category-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-dark dropdown-toggle category-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Category
                     </button>
-                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                        <a class="dropdown-item" href="#">Dropdown link</a>
-                        <a class="dropdown-item" href="#">Dropdown link</a>
+                    <div class="dropdown-menu category-dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item category-dropdown-item" href="#" data-category="all">Display All</a>
+                        {% for category in categories %}
+                            <a class="dropdown-item category-dropdown-item" href="#" data-category="{{ category }}">{{ category }}</a>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -76,12 +78,15 @@
                         {% for habit in habits %}
                             <div class="habit {{ habit.category }} habit-{{ habit.id }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}">{{ habit }}</div>
                             {% for key in column_keys %}
-                                <div class="checkbox habit-{{ habit.id }}">
+                                <div class="checkbox {{ habit.category }} habit-{{ habit.id }}">
                                     <img class="checkbox-image habit-{{ habit.id }}" id="checkbox-{{ habit.id }}-{{ key }}" data-doer="{{ user.username }}" data-habit="{{ habit.id }}" data-columnkey="{{ key }}">
                                 </div>
                             {% endfor %}
                         {% endfor %}
                     </div>
+
+                    <!-- Div for message alerting user that there are no habits to display -->
+                    <div class="no-habits-message">There are no habits in this category.</div>
                 </div>
             {% endif %}
         {% endif %}
