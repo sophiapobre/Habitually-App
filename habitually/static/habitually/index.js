@@ -224,11 +224,14 @@ function displayCategory(category) {
   // Hide 'no habits' message
   document.querySelector('.no-habits-message').style.display = 'none';
 
+  // Hide dropdown menu
+  toggleCategoryDropdownVisibility();
+
   // Check if user clicked on 'Display All' dropdown item
   if (category === 'all') {
     // Display all habits and checkboxes
-    document.querySelectorAll('.habit, .checkbox').forEach((item) => {
-      item.style.display = 'block';
+    document.querySelectorAll('.habit, .checkbox').forEach((element) => {
+      element.style.display = 'block';
     });
   }
   else {
