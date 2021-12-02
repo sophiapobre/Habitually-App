@@ -4,26 +4,45 @@ var weeksAgo = 0;
 // Create a constant global variable to store the number of days in a week
 const daysPerWeek = 7;
 
+var categoryDropdownVisibility = false;
+
 document.addEventListener('DOMContentLoaded', function () {
-  // Load calendar navigation buttons
-  loadCalendarNavButtons();
+  // Check if the user has habits
+  if (document.querySelector('.calendar') !== null) {
+    // Load calendar navigation buttons
+    loadCalendarNavButtons();
 
-  // Load dates for the heading of the weekly calendar view
-  loadDates();
+    // Load dates for the heading of the weekly calendar view
+    loadDates(weeksAgo);
 
-  // Load checked or unchecked boxes depending on habit completion status
-  loadCheckboxes();
+    // Load checked or unchecked boxes depending on habit completion status
+    loadCheckboxes(weeksAgo);
 
-  // Load delete button
-  loadDeleteButton();
+    // Load delete button
+    loadDeleteButton();
 
-  // When each checkbox is clicked, toggle habit completion for that day
-  document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
-    checkbox.onclick = function() {
-      // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
-      toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
+    // When each checkbox is clicked, toggle habit completion for that day
+    document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
+      checkbox.onclick = function() {
+        // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
+        toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
+      };
+    });
+
+    // When the category dropdown button is clicked
+    document.querySelector('.category-dropdown-button').onclick = function() {
+      // Show or hide category dropdown menu depending on its current visibility
+      toggleCategoryDropdownVisibility();
     };
-  });
+
+    // When a category in the dropdown menu is clicked on
+    document.querySelectorAll('.category-dropdown-item').forEach((item) => {
+      item.onclick = function() {
+        // Display the relevant category elements
+        displayCategory(this.dataset.category);
+      };
+    });
+  }
 });
 
 function loadCalendarNavButtons() {
@@ -59,9 +78,9 @@ function loadCalendarNavButtons() {
   };
 }
 
-function loadDates(weeksAgo = 0) {
+function loadDates() {
   // Dict containing keys to the days of the week
-  var days_dict = {
+  var daysDict = {
     1: 'MON',
     2: 'TUE',
     3: 'WED',
@@ -84,11 +103,11 @@ function loadDates(weeksAgo = 0) {
     var columnKey = i - daysPerWeek * weeksAgo;
 
     // Display weekday and date in first row
-    document.getElementById(`${columnKey}`).innerHTML = days_dict[dayOfWeek] + '<br>' + month + '/' + day;
+    document.getElementById(`${columnKey}`).innerHTML = daysDict[dayOfWeek] + '<br>' + month + '/' + day;
   }
 }
 
-function loadCheckboxes(weeksAgo = 0) {
+function loadCheckboxes() {
   // For each checkbox image, load the appropriate checkbox image (unchecked/checked)
   document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
     // Get given doer and habit ID
@@ -186,4 +205,50 @@ function deleteHabit(doer, habitId) {
       });
     }
   });
+}
+
+function toggleCategoryDropdownVisibility() {
+  if (categoryDropdownVisibility) {
+    // If dropdown is currently visible, hide it and set status to false
+    document.querySelector('.category-dropdown-menu').style.display = 'none';
+    categoryDropdownVisibility = false;
+  }
+  else {
+    // If dropdown is currently not visible, show it and set status to true
+    document.querySelector('.category-dropdown-menu').style.display = 'block';
+    categoryDropdownVisibility = true;
+  }
+}
+
+function displayCategory(category) {
+  // Hide 'no habits' message
+  document.querySelector('.no-habits-message').style.display = 'none';
+
+  // Check if user clicked on 'Display All' dropdown item
+  if (category === 'all') {
+    // Display all habits and checkboxes
+    document.querySelectorAll('.habit, .checkbox').forEach((item) => {
+      item.style.display = 'block';
+    });
+  }
+  else {
+    // Hide all habits and checkboxes
+    document.querySelectorAll('.habit, .checkbox').forEach((element) => {
+      element.style.display = 'none';
+    });
+
+    // Find the habits and checkboxes with the category as a class
+    var relevantElements = document.querySelectorAll(`.habit.${category}, .checkbox.${category}`);
+
+    // If there are no relevant elements, display message
+    if (relevantElements.length === 0) {
+      document.querySelector('.no-habits-message').style.display = 'block';
+    }
+    else {
+      // Display relevant elements
+      relevantElements.forEach((element) => {
+        element.style.display = 'block';
+      });
+    }
+  }
 }
