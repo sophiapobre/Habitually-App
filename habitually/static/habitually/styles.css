@@ -1,11 +1,19 @@
 /* Formatting for new habit form */
 .form-container {
-    margin: 20px auto;
+    visibility: hidden;
+    margin: 40px auto;
+    height: 0px;
+    opacity: 0%;
+    clear: both;
 }
 
 /* Positioning for h3 tags */
 h4 {
     margin: 10px auto;
+}
+
+textarea {
+    resize: none;
 }
 
 /* Formatting for add button */
@@ -49,7 +57,7 @@ h4 {
 }
 
 .habit-grid {
-    margin-bottom: 80px;
+    margin-bottom: 100px;
     height: min-content;
 }
 
@@ -114,8 +122,9 @@ h4 {
 }
 
 body {
-    padding-bottom: 80px;
+    padding-bottom: 240px;
     position: relative;
+    font-family: 'Poppins', sans-serif;
 }
 
 .footer {
@@ -124,8 +133,34 @@ body {
     bottom: 0;
     height: 40px;
     width: 100%;
-    padding-top:10px;
-    padding-bottom:10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     background-color: #f5f5f5;
     text-align: center;
+}
+
+.add-habit-button-container {
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    clear: both;
+}
+
+.add-habit-button-container > button {
+    display: inline;
+    float: right;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: small;
+    border-radius: 15px;
+}
+
+#profile-container {
+    visibility: hidden;
+    width: 100%;
+}
+
+h2 {
+    margin-top: 25px;
+    margin-bottom: 25px;
 }
