@@ -4,46 +4,187 @@ var weeksAgo = 0;
 // Create a constant global variable to store the number of days in a week
 const daysPerWeek = 7;
 
+var newHabitFormVisibility = false;
+
 var categoryDropdownVisibility = false;
 
+var chartOneData = ['Completion Rate'];
+
+
 document.addEventListener('DOMContentLoaded', function () {
-  // Check if the user has habits
-  if (document.querySelector('.calendar') !== null) {
-    // Load calendar navigation buttons
-    loadCalendarNavButtons();
+  document.querySelector('#plus-button').onclick = function() {
+    toggleNewHabitFormVisibility();
+  };
 
-    // Load dates for the heading of the weekly calendar view
-    loadDates(weeksAgo);
+  // Load calendar navigation buttons
+  loadCalendarNavButtons();
 
-    // Load checked or unchecked boxes depending on habit completion status
-    loadCheckboxes(weeksAgo);
+  // Load dates for the heading of the weekly calendar view
+  loadDates(weeksAgo);
 
-    // Load delete button
-    loadDeleteButton();
+  // Load checked or unchecked boxes depending on habit completion status
+  loadCheckboxes(weeksAgo);
 
-    // When each checkbox is clicked, toggle habit completion for that day
-    document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
-      checkbox.onclick = function() {
-        // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
-        toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
-      };
-    });
+  // Load delete button
+  loadDeleteButton();
 
-    // When the category dropdown button is clicked
-    document.querySelector('.category-dropdown-button').onclick = function() {
-      // Show or hide category dropdown menu depending on its current visibility
-      toggleCategoryDropdownVisibility();
+  // When each checkbox is clicked, toggle habit completion for that day
+  document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
+    checkbox.onclick = function() {
+      // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
+      toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
     };
+  });
 
-    // When a category in the dropdown menu is clicked on
-    document.querySelectorAll('.category-dropdown-item').forEach((item) => {
-      item.onclick = function() {
-        // Display the relevant category elements
-        displayCategory(this.dataset.category);
-      };
-    });
-  }
+  // When the category dropdown button is clicked
+  document.querySelector('.category-dropdown-button').onclick = function() {
+    // Show or hide category dropdown menu depending on its current visibility
+    toggleCategoryDropdownVisibility();
+  };
+
+  // When a category in the dropdown menu is clicked on
+  document.querySelectorAll('.category-dropdown-item').forEach((item) => {
+    item.onclick = function() {
+      // Display the relevant category elements
+      displayCategory(this.dataset.category);
+    };
+  });
+
+  // When the profile link is clicked, hide the weekly view and display the profile view
+  document.querySelector('#profile-link').onclick = function() {
+    document.querySelector('#weekly-view-container').style.visibility = 'hidden';
+    document.querySelector('#profile-container').style.visibility = 'visible';
+    getOverallHabitCompletionRates();
+  };
 });
+
+function getOverallHabitCompletionRates() {
+  fetch(`habitually/overall_habit_completion_rate`)
+  .then((response) => response.json())
+  .then((data) => {
+    data.forEach((rate) => {
+      chartOneData.push(rate);
+    });
+    console.log(chartOneData);
+  })
+  .then(() => {
+    generateOverallCompletionRateChart();
+  });
+}
+
+function generateOverallCompletionRateChart() {
+  var chartOne = c3.generate({
+    bindto: '#overall-completion-rate-chart',
+    data: {
+      x: 'x',
+      columns: [
+        getLastSevenDays(),
+        chartOneData,
+      ],
+    },
+    axis: {
+      x: {
+        type: 'timeseries',
+        tick: {
+          format: d3.timeFormat("%m/%d")
+        },
+      },
+      y: {
+        tick: {
+          format: d3.format(".0%")
+        },
+        label: {
+          text: 'Percentage of Habits Completed',
+          position: 'outer-middle'
+        }
+      },
+    },
+    legend: {
+      show: false
+    }
+  });
+}
+
+var dayArray = ['x'];
+
+function getLastSevenDays() {
+  for (var i = 6; i > -1; i--) {
+    var day = luxon.DateTime.now().minus({ days: i });
+    dayArray.push(day);
+  }
+  return dayArray;
+}
+
+// Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
+function openModal() {
+  document.getElementById('backdrop').style.display = 'block';
+  document.getElementById('exampleModalCenter').style.display = 'block';
+  document.getElementById('exampleModalCenter').classList.add('show');
+}
+
+// Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
+function closeModal() {
+  document.getElementById('backdrop').style.display = 'none';
+  document.getElementById('exampleModalCenter').style.display = 'none';
+  document.getElementById('exampleModalCenter').classList.remove('show');
+}
+
+// Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target === document.getElementById('exampleModalCenter')) {
+    closeModal();
+  }
+};
+
+function toggleNewHabitFormVisibility() {
+  if (newHabitFormVisibility) {
+    setTimeout(function() {
+      slideUp('form-container');
+    }, 200);
+    fadeOut('form-container');
+    document.querySelector('#plus-button').innerHTML = 'ADD HABIT +';
+    newHabitFormVisibility = false;
+  }
+  else {
+    setTimeout(function() {
+      fadeIn('form-container');
+    }, 200);
+    slideDown('form-container');
+    document.querySelector('#plus-button').innerHTML = 'ADD HABIT -';
+    newHabitFormVisibility = true;
+  }
+}
+
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function slideUp(id) {
+  var element = document.getElementById(id);
+  element.style.transition = "all 0.5s ease-in-out";
+  element.style.height = "0px";
+}
+
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function fadeOut(id) {
+  var element = document.getElementById(id);
+  element.style.transition = 'all 0.5s ease-in-out';
+  element.style.opacity = '0%';
+  element.style.visibility = 'hidden';
+}
+
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function slideDown(id) {
+  var element = document.getElementById(id);
+  element.style.transition = 'all 0.5s ease-in-out';
+  element.style.height = '240px';
+}
+
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function fadeIn(id) {
+  var element = document.getElementById(id);
+  element.style.transition = 'all 0.5s ease-in-out';
+  element.style.opacity = '100%';
+  element.style.visibility = 'visible';
+}
 
 function loadCalendarNavButtons() {
   // By default (i.e. user is on current week), the next button should be disabled
@@ -182,8 +323,8 @@ function loadDeleteButton() {
     };
 
     // When cursor is no longer hovering on both the habit and delete button, remove delete button
-    var elementsArray = [deleteButton, habit];
-    elementsArray.forEach((element) => {
+    var relevantElements = [deleteButton, habit];
+    relevantElements.forEach((element) => {
       element.onmouseleave = function() {
         deleteButton.remove();
       };
@@ -227,7 +368,7 @@ function displayCategory(category) {
   // Hide dropdown menu
   toggleCategoryDropdownVisibility();
 
-  // Check if user clicked on 'Display All' dropdown item
+  // Check if user clicked on 'All Categories' dropdown item
   if (category === 'all') {
     // Display all habits and checkboxes
     document.querySelectorAll('.habit, .checkbox').forEach((element) => {
@@ -243,7 +384,7 @@ function displayCategory(category) {
     // Find the habits and checkboxes with the category as a class
     var relevantElements = document.querySelectorAll(`.habit.${category}, .checkbox.${category}`);
 
-    // If there are no relevant elements, display message
+    // If there are no relevant elements, display "no habits" message
     if (relevantElements.length === 0) {
       document.querySelector('.no-habits-message').style.display = 'block';
     }
@@ -255,3 +396,4 @@ function displayCategory(category) {
     }
   }
 }
+
