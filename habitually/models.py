@@ -25,7 +25,6 @@ class Habit(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-
 class Completion(models.Model):
     doer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="completion_status")
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="completion_status")
@@ -33,4 +32,4 @@ class Completion(models.Model):
     status = models.BooleanField(null=False)
 
     def __str__(self):
-        return f"{self.doer} | {self.habit} |  Date: {self.time} Completed: {self.status}"
+        return f"{self.status}"
