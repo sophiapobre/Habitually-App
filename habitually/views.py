@@ -12,6 +12,10 @@ import random
 
 import datetime
 
+import json
+
+DAYS_PER_WEEK = 7
+
 # Create your views here.
 
 def index(request):
@@ -198,26 +202,132 @@ def habit_completion_status(request, doer, habit_id, date, action):
 @login_required
 def overall_habit_completion_rate(request):
     completion_rates = []
-    user_habits = request.user.habits.all().values_list("id", flat=True)
+    user_habits = request.user.habits.all()
 
     for i in range(6, -1, -1):
-        date = datetime.date.today() - datetime.timedelta(days=i)
+        date = get_date_i_days_ago(i)
 
-        # Get date after date in focus for range (second argument in Python range is not included)
+        habits_completed_on_date = 0
+        for habit in user_habits:
+            try:
+                completion = Completion.objects.get(habit=habit.id, doer=request.user, time=date)
+                if completion.status:
+                    habits_completed_on_date += 1
+            except Completion.DoesNotExist:
+                pass
+
+        completion_rate = round(habits_completed_on_date / len(user_habits) * 100, 1)
+        completion_rates.append(completion_rate)
+    return JsonResponse(completion_rates, safe=False)
+
+def get_date_i_days_ago(i):
+    date = datetime.date.today() - datetime.timedelta(days=i)
+    return date
+
+@login_required
+def seven_day_habit_completion_rates(request):
+    # Get the IDs of the user's habits
+    user_habits = request.user.habits.all()
+
+    seven_day_completion_rates = {}
+    for habit in user_habits:
+        times_completed_this_week = 0
+        for i in range(0, 7):
+            date = get_date_i_days_ago(i)
+
+            # Get completion status of this habit for the day
+            try:
+                completion = Completion.objects.get(habit=habit.id, doer=request.user, time=date)
+                if completion.status:
+                    times_completed_this_week += 1
+            except:
+                pass
+        seven_day_completion_rates[habit.name] = round(times_completed_this_week / DAYS_PER_WEEK * 100, 1 )
+
+        sorted_dict = {}
+        sorted_values = sorted(seven_day_completion_rates.values(), reverse=True)
+        for value in sorted_values:
+            for key in seven_day_completion_rates.keys():
+                if seven_day_completion_rates[key] == value:
+                    sorted_dict[key] = seven_day_completion_rates[key]
+    return JsonResponse(sorted_dict)
+
+# Get date after date in focus for range (second argument in Python range is not included)
         # date_plus_one_day = date + datetime.timedelta(days=1)
         #habits_on_date = request.user.habits.filter(creation_time__range=["2021-11-15", date_plus_one_day]).values_list("id", flat=True)
         #habit_count_on_date = len(habits_on_date)
+from itertools import groupby
 
-        # completion_rates.append(date)
-        habits_completed_on_date = 0
-        for habit_id in user_habits:
-            try:
-                completion = Completion.objects.get(habit=habit_id, doer=request.user, time=date)
-                if completion.status == True:
-                    habits_completed_on_date += 1
-            except Completion.DoesNotExist:
-                habits_completed_on_date += 0
+@login_required
+def completion_streaks_per_habit(request, streak):
+    user_habits = request.user.habits.all()
 
-        completion_rate = round(habits_completed_on_date / len(user_habits), 2)
-        completion_rates.append(completion_rate)
-    return JsonResponse(completion_rates, safe=False)
+    # Get current date and day after for date range
+    current_date = datetime.date.today()
+    current_date_plus_one_day = current_date + datetime.timedelta(days=1)
+
+    # Create a dict to store each habit's streaks
+    streaks_dict = {}
+    for habit in user_habits:
+
+        # Get a sorted list of all dates with completion data and their completion statuses (True/False)
+        full_completion_data = sorted(list(Completion.objects.filter(habit=habit.id, doer=request.user, time__range=["2000-01-01", current_date_plus_one_day]).values_list("time", "status")))
+
+        habit_streak = 0
+
+        # Check if there is completion data
+        if len(full_completion_data) != 0:
+
+            # Create a list with only dates (converted to ordinals) that have True completion statuses
+            completion_dates_true = []
+            for i in range(len(full_completion_data)):
+                if full_completion_data[i][1] is True:
+                    completion_dates_true.append(full_completion_data[i][0].toordinal())
+
+            # Check if there are any dates with True completion statuses
+            if len(completion_dates_true) != 0:
+                # Check if longest streak was requested
+                if streak == "longest":
+                    # Set longest and current streak variables to 1
+                    longest_streak = 1
+                    current_longest_streak = 1
+
+                    # For each date with a True completion status
+                    for i in range(len(completion_dates_true) - 1):
+                        # Check if the next date in the list is a consecutive date
+                        if completion_dates_true[i] + 1 == completion_dates_true[i + 1]:
+                            # Add to current streak
+                            current_longest_streak += 1
+                            # Set longest streak's value to current streak's value
+                            if current_longest_streak > longest_streak:
+                                longest_streak = current_longest_streak
+                        else:
+                            # Reset current streak to 1
+                            current_longest_streak = 1
+                    habit_streak = longest_streak
+                # Check if current streak was requested
+                elif streak =="current":
+                    if completion_dates_true[-1] != current_date.toordinal():
+                        habit_streak = 0
+                    else:
+                        habit_streak = 1
+                        for i in range(len(completion_dates_true) - 1, 0, -1):
+                            if completion_dates_true[i] - 1 == completion_dates_true[i - 1]:
+                                habit_streak += 1
+                            else:
+                                break
+            else:
+                # Set longest streak to 0
+                habit_streak = 0
+        else:
+            # Set longest streak to 0
+            habit_streak = 0
+
+        # Add habit name and longest streak data to the streaks dict
+        streaks_dict[habit.id] = habit_streak
+    return JsonResponse(streaks_dict)
+
+@login_required
+def get_habit_count(request):
+    habit_count = len(request.user.habits.all())
+    return JsonResponse({"habit_count": habit_count})
