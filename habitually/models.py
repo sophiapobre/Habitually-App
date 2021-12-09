@@ -19,7 +19,7 @@ class Category(models.Model):
 class Habit(models.Model):
     creation_time = models.DateTimeField(auto_now_add=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="habits")
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=21)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="habits")
 
     def __str__(self):
