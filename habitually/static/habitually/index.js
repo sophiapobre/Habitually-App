@@ -8,78 +8,136 @@ var newHabitFormVisibility = false;
 
 var categoryDropdownVisibility = false;
 
-var chartOneData = ['Completion Rate'];
-
+var lineChartData = ['Completion Rate'];
 
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('#plus-button').onclick = function() {
     toggleNewHabitFormVisibility();
   };
 
-  // Load calendar navigation buttons
-  loadCalendarNavButtons();
+  if (document.querySelector('.calendar') !== null) {
 
-  // Load dates for the heading of the weekly calendar view
-  loadDates(weeksAgo);
+    // Load calendar navigation buttons
+    loadCalendarNavButtons();
 
-  // Load checked or unchecked boxes depending on habit completion status
-  loadCheckboxes(weeksAgo);
+    // Load dates for the heading of the weekly calendar view
+    loadDates(weeksAgo);
 
-  // Load delete button
-  loadDeleteButton();
+    // Load checked or unchecked boxes depending on habit completion status
+    loadCheckboxes(weeksAgo);
 
-  // When each checkbox is clicked, toggle habit completion for that day
-  document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
-    checkbox.onclick = function() {
-      // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
-      toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
+    // Load delete button
+    loadDeleteButton();
+
+    // When each checkbox is clicked, toggle habit completion for that day
+    document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
+      checkbox.onclick = function() {
+        // Call toggleCompletion() function, passing through data attributes and calculating number of days ago from today
+        toggleCompletion(this.dataset.doer, this.dataset.habit, (parseInt(this.dataset.columnkey) + daysPerWeek * weeksAgo));
+      };
+    });
+
+    // When the category dropdown button is clicked
+    document.querySelector('.category-dropdown-button').onclick = function() {
+      // Show or hide category dropdown menu depending on its current visibility
+      toggleCategoryDropdownVisibility();
     };
-  });
 
-  // When the category dropdown button is clicked
-  document.querySelector('.category-dropdown-button').onclick = function() {
-    // Show or hide category dropdown menu depending on its current visibility
-    toggleCategoryDropdownVisibility();
-  };
+    // When a category in the dropdown menu is clicked on
+    document.querySelectorAll('.category-dropdown-item').forEach((item) => {
+      item.onclick = function() {
+        // Display the relevant category elements
+        displayCategory(this.dataset.category);
+      };
+    });
+  }
 
-  // When a category in the dropdown menu is clicked on
-  document.querySelectorAll('.category-dropdown-item').forEach((item) => {
-    item.onclick = function() {
-      // Display the relevant category elements
-      displayCategory(this.dataset.category);
-    };
-  });
-
-  // When the profile link is clicked, hide the weekly view and display the profile view
+  // When the profile link is clicked, get the completion streaks per habit
   document.querySelector('#profile-link').onclick = function() {
-    document.querySelector('#weekly-view-container').style.visibility = 'hidden';
-    document.querySelector('#profile-container').style.visibility = 'visible';
-    getOverallHabitCompletionRates();
+    loadProfile();
   };
 });
+
+function loadProfile() {
+  fetch(`habitually/get_habit_count`)
+  .then((response) => response.json())
+  .then((data) => {
+    console.log(data);
+    if (data.habit_count > 0) {
+      getCompletionStreaksPerHabit('current');
+    }
+    else {
+      document.querySelector('#weekly-view-container').style.display = 'none';
+      document.querySelector('#charts-container').style.display = 'none';
+      document.querySelector('#no-habits-message-profile').style.display = 'block';
+      document.querySelector('#profile-container').style.display = 'block';
+    }
+  });
+}
+
+function getCompletionStreaksPerHabit(streak) {
+  fetch(`habitually/completion_streaks_per_habit/${streak}`)
+  .then((response) => response.json())
+  .then((data) => {
+    habitIds = Object.keys(data);
+    habitStreaks = Object.values(data);
+
+    var counter = 0;
+    habitIds.forEach((habitId) => {
+      var span = document.querySelector(`#streak-${habitId}`);
+      if (habitStreaks[counter] === 1) {
+        if (streak === 'current') {
+          span.innerHTML = `${habitStreaks[counter]} day | `;
+        }
+        else if (streak === 'longest') {
+          span.append(`${habitStreaks[counter]} day`);
+        }
+      }
+      else {
+        if (streak === 'current') {
+          span.innerHTML = `${habitStreaks[counter]} days | `;
+        }
+        else if (streak === 'longest') {
+          span.append(`${habitStreaks[counter]} days`);
+        }
+      }
+
+      counter += 1;
+    });
+  })
+  .then(() => {
+    if (streak !== 'longest') {
+      getCompletionStreaksPerHabit('longest');
+    }
+    else {
+      getOverallHabitCompletionRates();
+    }
+  });
+}
 
 function getOverallHabitCompletionRates() {
   fetch(`habitually/overall_habit_completion_rate`)
   .then((response) => response.json())
   .then((data) => {
+    console.log(data);
     data.forEach((rate) => {
-      chartOneData.push(rate);
+      lineChartData.push(rate);
     });
-    console.log(chartOneData);
   })
   .then(() => {
     generateOverallCompletionRateChart();
+    getSevenDayHabitCompletionRates();
   });
 }
 
 function generateOverallCompletionRateChart() {
-  var chartOne = c3.generate({
+  var lineChart = c3.generate({
     bindto: '#overall-completion-rate-chart',
     data: {
       x: 'x',
       columns: [
         getLastSevenDays(),
-        chartOneData,
+        lineChartData
       ],
     },
     axis: {
@@ -87,14 +145,11 @@ function generateOverallCompletionRateChart() {
         type: 'timeseries',
         tick: {
           format: d3.timeFormat("%m/%d")
-        },
+        }
       },
       y: {
-        tick: {
-          format: d3.format(".0%")
-        },
         label: {
-          text: 'Percentage of Habits Completed',
+          text: 'Percentage of Habits Completed (%)',
           position: 'outer-middle'
         }
       },
@@ -113,6 +168,70 @@ function getLastSevenDays() {
     dayArray.push(day);
   }
   return dayArray;
+}
+
+var barChartHabits = ['x'];
+
+var barChartRates = ['Completion Rate'];
+
+function getSevenDayHabitCompletionRates() {
+  fetch(`habitually/seven_day_habit_completion_rates`)
+  .then((response) => response.json())
+  .then((data) => {
+    for (var habit in data) {
+      barChartHabits.push(habit);
+      barChartRates.push(data[habit]);
+    }
+  })
+  .then(() => {
+    generateHabitBarChart();
+    document.querySelector('#weekly-view-container').style.display = 'none';
+    document.querySelector('#profile-container').style.display = 'block';
+  });
+}
+
+function generateHabitBarChart() {
+  var barChart = c3.generate({
+    bindto: '#habit-bar-chart',
+    bar: {
+        width: {
+          ratio: 0.5
+        }
+    },
+    padding: {
+        left: 110
+    },
+    color: {
+        pattern: ['#7FB3D5']
+    },
+    data: {
+        x: 'x',
+        columns:
+            [
+          barChartHabits,
+          barChartRates
+          ],
+        type: 'bar',
+    },
+    axis: {
+        rotated: true,
+        x: {
+            type: 'category',
+        },
+        y: {
+          label: {
+            text: 'Completion Rate (%)',
+            position: 'outer-middle'
+          },
+        },
+    },
+    tooltip: {
+        grouped: false
+    },
+    legend: {
+        show: false
+    }
+});
 }
 
 // Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
