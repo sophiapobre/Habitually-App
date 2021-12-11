@@ -17,7 +17,6 @@ DAYS_PER_WEEK = 7
 
 HABIT_LIMIT = 10
 
-# Create your views here.
 
 def index(request):
     return render(request, "habitually/index.html")
