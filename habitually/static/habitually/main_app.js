@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 // Create a global variable to track which week the user is viewing
 var weeksAgo = 0;
 
@@ -171,7 +173,9 @@ function generateOverallCompletionRateChart() {
       x: {
         type: 'timeseries',
         tick: {
-          format: d3.timeFormat("%m/%d")
+          format: d3.timeFormat("%m/%d"),
+          outer: false,
+          values: getLineChartDateTicks()
         }
       },
       y: {
@@ -195,6 +199,22 @@ function getLastSevenDays() {
     dayArray.push(day);
   }
   return dayArray;
+
+}
+
+function getLineChartDateTicks() {
+  var lineChartDateTicks = [];
+  var counter = 1;
+
+  dayArray.forEach((date) => {
+    if (counter % 2 !== 0) {
+      lineChartDateTicks.push(date);
+    }
+    console.log(counter);
+    counter += 1;
+  });
+  console.log(lineChartDateTicks);
+  return lineChartDateTicks;
 }
 
 var barChartHabits = ['x'];
@@ -211,6 +231,7 @@ function getSevenDayHabitCompletionRates() {
     }
   })
   .then(() => {
+    console.log(barChartRates);
     generateHabitBarChart();
     document.querySelector('#weekly-view-container').style.display = 'none';
     document.querySelector('#profile-container').style.display = 'block';
@@ -250,6 +271,10 @@ function generateHabitBarChart() {
             text: 'Completion Rate (%)',
             position: 'outer-middle'
           },
+          tick: {
+            outer: false,
+            values: getBarChartRateTicks()
+          },
         },
     },
     tooltip: {
@@ -259,6 +284,26 @@ function generateHabitBarChart() {
         show: false
     }
 });
+}
+
+function getBarChartRateTicks () {
+  var counter = 0;
+  var allZeroRates = true;
+  barChartRates.forEach((rate) => {
+    if (counter > 0) {
+      if (rate != 0) {
+        allZeroRates = false;
+      }
+    }
+    counter += 1;
+  });
+  if (allZeroRates) {
+    return 0;
+  }
+  else {
+    return [0, 25, 50, 75, 100];
+  }
+
 }
 
 // Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
@@ -391,6 +436,9 @@ function loadDates() {
 
     // Display weekday and date in first row
     document.getElementById(`${columnKey}`).innerHTML = daysDict[dayOfWeek] + '<br>' + month + '/' + day;
+
+    // Add date only for mobile-only first row div
+    document.getElementById(`date-only-${columnKey}`).innerHTML = month + '<br>' + day;
   }
 }
 
