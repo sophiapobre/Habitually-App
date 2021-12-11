@@ -4,7 +4,7 @@
 {% block body %}
     <div class="container">
         <div class="container" id="profile-container">
-            <h2>Your Progress</h2>
+            <h3>Your Progress</h3>
             <div class="container" id="no-habits-message-profile">
                 Check back here once you start adding habits!
             </div>
@@ -137,7 +137,8 @@
                         <div class="calendar-first-row">
                             <div class="calendar-first-column"></div>
                             {% for key in column_keys %}
-                                <div class="day" id="{{ key }}"></div>
+                                <div class="day date-and-day" id="{{ key }}"></div>
+                                <div class="day date-only" id="date-only-{{ key }}"></div>
                             {% endfor %}
                         </div>
 
