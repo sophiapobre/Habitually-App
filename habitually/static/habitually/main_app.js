@@ -10,6 +10,8 @@ var categoryDropdownVisibility = false;
 
 var lineChartData = ['Completion Rate'];
 
+var checkedCheckboxes = 0;
+
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('#plus-button').onclick = function() {
     toggleNewHabitFormVisibility();
@@ -56,6 +58,31 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('#profile-link').onclick = function() {
     loadProfile();
   };
+
+  // By default, disable the add button in the suggested habits modal
+  document.querySelector('#add-suggested-habit-button').disabled = true;
+
+  // For each checkbox
+  document.querySelectorAll('.form-check-input').forEach((checkbox) => {
+    checkbox.onchange = function() {
+      // Keep track of how many checkboxes are checked
+      if (checkbox.checked) {
+        checkedCheckboxes += 1;
+      }
+      else {
+        checkedCheckboxes -= 1;
+      }
+
+      // Enable the add button in the suggested habits modal when at least one checkbox is checked
+      if (checkedCheckboxes >= 1) {
+        document.querySelector('#add-suggested-habit-button').disabled = false;
+      }
+      else {
+        // Disable the add button in the suggested habits modal
+        document.querySelector('#add-suggested-habit-button').disabled = true;
+      }
+    };
+  });
 });
 
 function loadProfile() {
