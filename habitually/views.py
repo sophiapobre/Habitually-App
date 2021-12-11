@@ -2,9 +2,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from urllib.parse import urlencode
 
 from .models import User, Category, Habit, Completion
 
@@ -12,13 +13,16 @@ import random
 
 import datetime
 
-import json
-
 DAYS_PER_WEEK = 7
+
+HABIT_LIMIT = 10
 
 # Create your views here.
 
 def index(request):
+    return render(request, "habitually/index.html")
+
+def main_app(request):
     # Check if user is logged in
     if request.user.is_authenticated:
         categories = Category.objects.all()
@@ -41,14 +45,21 @@ def index(request):
         random.shuffle(not_user_habits)
         suggested_habits = not_user_habits[0:5]
 
-        return render(request, "habitually/index.html", {
+        # Get "habit already exists" message parameter from add_habit()
+        message = request.GET.get("message")
+        # If message is None (no error), clear the variable
+        if message is None:
+            message = ""
+
+        return render(request, "habitually/main_app.html", {
             "categories": categories,
             "column_keys": column_keys,
             "user_habits": user_habits,
-            "suggested_habits": suggested_habits
+            "suggested_habits": suggested_habits,
+            "message": message
         })
     else:
-        return render(request, "habitually/index.html")
+        return render(request, "habitually/main_app.html")
 
 
 def login_view(request):
@@ -61,7 +72,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("main_app"))
         else:
             return render(request, "habitually/login.html", {
                 "message": "Invalid username and/or password."
@@ -97,56 +108,69 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("main_app"))
     else:
         return render(request, "habitually/register.html")
 
 
 # Add a new habit
 @login_required
-def add_habit(request):
+def add_habit(request, type):
     # Check if method is POST
     if request.method == "POST":
-        # Display error message if user has previously added the habit
+        # Display habit limit message if user already has 10 habits
         user_habits = request.user.habits.all()
-        for user_habit in user_habits:
-            if request.POST["habit"].casefold() == user_habit.name.casefold():
-                return render(request, "habitually/index.html", {
-                    "categories": Category.objects.all(),
-                    "user_habits": user_habits,
-                    # TODO: Add suggested habits to this list, and refactor process from index?
-                    "day_keys": list(reversed(range(0, 7))),
-                    "message": "ERROR: You've already added this habit!"
-                })
+        habit_count = user_habits.count()
+        if habit_count == HABIT_LIMIT:
+            message = "You've already reached the habit limit of 10! You may only add another habit if you delete an existing one."
+            return add_habit_error_message(message)
 
-        # Store data in Habit model fields and save
-        habit = Habit()
-        habit.creator = request.user
-        habit.name = request.POST["habit"]
-        habit.category = Category.objects.get(category=request.POST["category"])
-        habit.save()
-    return HttpResponseRedirect(reverse("index"))
+        if type == "new":
+            # Display error message if user has previously added the habit
+            for user_habit in user_habits:
+                if request.POST["habit"].casefold() == user_habit.name.casefold():
+                    message = "You've already added this habit!"
+                    return add_habit_error_message(message)
 
+            # Create a new habit, store data in model fields and save
+            habit = Habit()
+            habit.creator = request.user
+            habit.name = request.POST["habit"]
+            habit.category = Category.objects.get(category=request.POST["category"])
+            habit.save()
+        elif type == "suggested":
+            # Get list of habits checked by the user
+            habits = request.POST.getlist("habit")
 
-# Add suggested habits
-@login_required
-def add_suggested_habits(request):
-    # Check if method is POST
-    if request.method == "POST":
-        # Get list of habits checked by the user
-        habits = request.POST.getlist("habit")
-        for habit in habits:
-            # Get the category of the habit
-            original_habit_obj = Habit.objects.get(name=habit, creator__in=[1, 2])
-            category = original_habit_obj.category
+            # Calculate the number of habits the user can still add
+            allowable_new_habits = HABIT_LIMIT - habit_count
 
-            # Create a new habit for the user
-            new_habit = Habit()
-            new_habit.creator = request.user
-            new_habit.name = habit
-            new_habit.category = category
-            new_habit.save()
-    return HttpResponseRedirect(reverse("index"))
+            # Display error message if user tries to add more than the allowable amount
+            if len(habits) > allowable_new_habits:
+                message = "You cannot select " + str(len(habits)) + " suggested habits because it goes over the habit limit of 10!" + " Please select only " + str(allowable_new_habits) + " or delete existing ones."
+                return add_habit_error_message(message)
+
+            # For each suggested habit selected by the user in the form
+            for suggested_habit in habits:
+                # Get the category of the habit
+                original_habit_obj = Habit.objects.get(name=suggested_habit, creator__in=[1, 2])
+                category = original_habit_obj.category
+
+                # Create a new habit, store data in model fields and save
+                habit = Habit()
+                habit.creator = request.user
+                habit.name = suggested_habit
+                habit.category = category
+                habit.save()
+    return HttpResponseRedirect(reverse("main_app"))
+
+# Redirect to main_app while passing error message parameter
+def add_habit_error_message(message):
+    # Adapted from D. Hepper at https://realpython.com/django-redirects/#passing-parameters-with-redirects
+    base_url = reverse("main_app")
+    query_string = urlencode({"message": "ERROR: " + message})
+    url = "{}?{}".format(base_url, query_string)
+    return redirect(url)
 
 
 # Delete an existing habit
@@ -196,7 +220,6 @@ def habit_completion_status(request, doer, habit_id, date, action):
         return JsonResponse({"habit_id": habit_id, "date": completion.time, "status": completion.status})
     else:
         return JsonResponse({"error": "An error occurred."}, status=404)
-
 
 
 @login_required
@@ -252,11 +275,6 @@ def seven_day_habit_completion_rates(request):
                     sorted_dict[key] = seven_day_completion_rates[key]
     return JsonResponse(sorted_dict)
 
-# Get date after date in focus for range (second argument in Python range is not included)
-        # date_plus_one_day = date + datetime.timedelta(days=1)
-        #habits_on_date = request.user.habits.filter(creation_time__range=["2021-11-15", date_plus_one_day]).values_list("id", flat=True)
-        #habit_count_on_date = len(habits_on_date)
-from itertools import groupby
 
 @login_required
 def completion_streaks_per_habit(request, streak):
@@ -304,17 +322,25 @@ def completion_streaks_per_habit(request, streak):
                         else:
                             # Reset current streak to 1
                             current_longest_streak = 1
+                    # Store longest streak in habit_streak variable
                     habit_streak = longest_streak
                 # Check if current streak was requested
                 elif streak =="current":
+                    # Check if the most recent date with a "True" status is not the current date
                     if completion_dates_true[-1] != current_date.toordinal():
+                        # Set habit_streak to 0 because the user does not have a current streak
                         habit_streak = 0
                     else:
+                        # Add to habit streak
                         habit_streak = 1
+
+                        # Starting from the end of the list of dates with a "True" status, iterate through list
                         for i in range(len(completion_dates_true) - 1, 0, -1):
+                            # Check if the previous item is the consecutive previous date
                             if completion_dates_true[i] - 1 == completion_dates_true[i - 1]:
                                 habit_streak += 1
                             else:
+                                # Stop counting because the streak was broken
                                 break
             else:
                 # Set longest streak to 0
