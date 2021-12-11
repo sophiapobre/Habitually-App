@@ -127,18 +127,6 @@ body {
     font-family: 'Poppins', sans-serif;
 }
 
-.footer {
-    font-size: .8em;
-    position: absolute;
-    bottom: 0;
-    height: 40px;
-    width: 100%;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    background-color: #f5f5f5;
-    text-align: center;
-}
-
 .add-habit-button-container {
     width: 100%;
     margin-top: 20px;
@@ -168,4 +156,45 @@ h2 {
 #no-habits-message-profile {
     display: none;
     text-align: center;
+}
+
+.alert-danger {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#background-video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+  }
+
+
+h1, h2 {
+color: white;
+font-weight: bold;
+text-align: center;
+}
+
+h1 {
+font-size: 6rem;
+margin-top: 30vh;
+}
+
+h2 {
+    font-size: 3rem;
+}
+
+#habitually-navbar, #logged-user {
+    cursor: default;
+}
+
+#add-suggested-habit-button:disabled {
+    cursor: not-allowed;
 }
