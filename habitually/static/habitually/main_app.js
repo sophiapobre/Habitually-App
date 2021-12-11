@@ -485,11 +485,13 @@ function deleteHabit(doer, habitId) {
     // Log data onto console
     console.log(data);
 
-    // Remove relevant elements if success message is returned
+    // Remove relevant elements and refresh page if success message is returned
     if ('message' in data) {
       document.querySelectorAll(`.habit-${habitId}`).forEach((element) => {
         element.remove();
       });
+
+      location.reload(true);
     }
   });
 }
@@ -542,4 +544,3 @@ function displayCategory(category) {
     }
   }
 }
-
