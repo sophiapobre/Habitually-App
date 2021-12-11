@@ -20,12 +20,12 @@ from habitually import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
-    path("error", views.index, name="error"),
+    path("tracker", views.main_app, name="main_app"),
+    path("error", views.main_app, name="error"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
-    path("add_habit", views.add_habit, name="add_habit"),
-    path("add_suggested_habits", views.add_suggested_habits, name="add_suggested_habits"),
+    path("add_habit/<str:type>", views.add_habit, name="add_habit"),
 
     # API Routes
     path("habitually/<str:doer>/<int:habit_id>/<str:date>/<str:action>", views.habit_completion_status, name="habit_completion_status"),
