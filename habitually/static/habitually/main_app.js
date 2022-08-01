@@ -1,4 +1,4 @@
-/*jshint esversion: 6 */
+/* jshint esversion: 6 */
 
 // Create a global variable to track which week the user is viewing
 var weeksAgo = 0;
@@ -6,19 +6,35 @@ var weeksAgo = 0;
 // Create a constant global variable to store the number of days in a week
 const daysPerWeek = 7;
 
+// Create a global variable setting new habit form's visibility to false by default
 var newHabitFormVisibility = false;
 
+// Create a global variable setting the category dropdown's visibility to false by default
 var categoryDropdownVisibility = false;
 
+// Create a global variable for the line chart data
 var lineChartData = ['Completion Rate'];
 
+// Create a global variable setting the number of checked checkboxes in the modal to 0 by default
 var checkedCheckboxes = 0;
 
+// Create a global variable for storing a list of dates for the line chart
+var dayArray = ['x'];
+
+// Create a global variable for storing a list of habit names for bar chart
+var barChartHabits = ['x'];
+
+// Create a global variable for storing a list of habit completion rates for bar chart
+var barChartRates = ['Completion Rate'];
+
+// When the DOM Content is loaded
 document.addEventListener('DOMContentLoaded', function () {
+  // When the 'Add habit +' plus button is clicked, toggle the new habit form visibility
   document.querySelector('#plus-button').onclick = function() {
     toggleNewHabitFormVisibility();
   };
 
+  // Check if the calendar view is displayed (when user is on the tracker)
   if (document.querySelector('.calendar') !== null) {
 
     // Load calendar navigation buttons
@@ -87,296 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-function loadProfile() {
-  fetch(`habitually/get_habit_count`)
-  .then((response) => response.json())
-  .then((data) => {
-    console.log(data);
-    if (data.habit_count > 0) {
-      getCompletionStreaksPerHabit('current');
-    }
-    else {
-      document.querySelector('#weekly-view-container').style.display = 'none';
-      document.querySelector('#charts-container').style.display = 'none';
-      document.querySelector('#no-habits-message-profile').style.display = 'block';
-      document.querySelector('#profile-container').style.display = 'block';
-    }
-  });
-}
-
-function getCompletionStreaksPerHabit(streak) {
-  fetch(`habitually/completion_streaks_per_habit/${streak}`)
-  .then((response) => response.json())
-  .then((data) => {
-    habitIds = Object.keys(data);
-    habitStreaks = Object.values(data);
-
-    var counter = 0;
-    habitIds.forEach((habitId) => {
-      var span = document.querySelector(`#streak-${habitId}`);
-      if (habitStreaks[counter] === 1) {
-        if (streak === 'current') {
-          span.innerHTML = `${habitStreaks[counter]} day | `;
-        }
-        else if (streak === 'longest') {
-          span.append(`${habitStreaks[counter]} day`);
-        }
-      }
-      else {
-        if (streak === 'current') {
-          span.innerHTML = `${habitStreaks[counter]} days | `;
-        }
-        else if (streak === 'longest') {
-          span.append(`${habitStreaks[counter]} days`);
-        }
-      }
-
-      counter += 1;
-    });
-  })
-  .then(() => {
-    if (streak !== 'longest') {
-      getCompletionStreaksPerHabit('longest');
-    }
-    else {
-      getOverallHabitCompletionRates();
-    }
-  });
-}
-
-function getOverallHabitCompletionRates() {
-  fetch(`habitually/overall_habit_completion_rate`)
-  .then((response) => response.json())
-  .then((data) => {
-    console.log(data);
-    data.forEach((rate) => {
-      lineChartData.push(rate);
-    });
-  })
-  .then(() => {
-    generateOverallCompletionRateChart();
-    getSevenDayHabitCompletionRates();
-  });
-}
-
-function generateOverallCompletionRateChart() {
-  var lineChart = c3.generate({
-    bindto: '#overall-completion-rate-chart',
-    data: {
-      x: 'x',
-      columns: [
-        getLastSevenDays(),
-        lineChartData
-      ],
-    },
-    axis: {
-      x: {
-        type: 'timeseries',
-        tick: {
-          format: d3.timeFormat("%m/%d"),
-          outer: false,
-          values: getLineChartDateTicks()
-        }
-      },
-      y: {
-        label: {
-          text: 'Percentage of Habits Completed (%)',
-          position: 'outer-middle'
-        }
-      },
-    },
-    legend: {
-      show: false
-    }
-  });
-}
-
-var dayArray = ['x'];
-
-function getLastSevenDays() {
-  for (var i = 6; i > -1; i--) {
-    var day = luxon.DateTime.now().minus({ days: i });
-    dayArray.push(day);
-  }
-  return dayArray;
-
-}
-
-function getLineChartDateTicks() {
-  var lineChartDateTicks = [];
-  var counter = 1;
-
-  dayArray.forEach((date) => {
-    if (counter % 2 !== 0) {
-      lineChartDateTicks.push(date);
-    }
-    console.log(counter);
-    counter += 1;
-  });
-  console.log(lineChartDateTicks);
-  return lineChartDateTicks;
-}
-
-var barChartHabits = ['x'];
-
-var barChartRates = ['Completion Rate'];
-
-function getSevenDayHabitCompletionRates() {
-  fetch(`habitually/seven_day_habit_completion_rates`)
-  .then((response) => response.json())
-  .then((data) => {
-    for (var habit in data) {
-      barChartHabits.push(habit);
-      barChartRates.push(data[habit]);
-    }
-  })
-  .then(() => {
-    console.log(barChartRates);
-    generateHabitBarChart();
-    document.querySelector('#weekly-view-container').style.display = 'none';
-    document.querySelector('#profile-container').style.display = 'block';
-  });
-}
-
-function generateHabitBarChart() {
-  var barChart = c3.generate({
-    bindto: '#habit-bar-chart',
-    bar: {
-        width: {
-          ratio: 0.5
-        }
-    },
-    padding: {
-        left: 110
-    },
-    color: {
-        pattern: ['#7FB3D5']
-    },
-    data: {
-        x: 'x',
-        columns:
-            [
-          barChartHabits,
-          barChartRates
-          ],
-        type: 'bar',
-    },
-    axis: {
-        rotated: true,
-        x: {
-            type: 'category',
-        },
-        y: {
-          label: {
-            text: 'Completion Rate (%)',
-            position: 'outer-middle'
-          },
-          tick: {
-            outer: false,
-            values: getBarChartRateTicks()
-          },
-        },
-    },
-    tooltip: {
-        grouped: false
-    },
-    legend: {
-        show: false
-    }
-});
-}
-
-function getBarChartRateTicks () {
-  var counter = 0;
-  var allZeroRates = true;
-  barChartRates.forEach((rate) => {
-    if (counter > 0) {
-      if (rate != 0) {
-        allZeroRates = false;
-      }
-    }
-    counter += 1;
-  });
-  if (allZeroRates) {
-    return 0;
-  }
-  else {
-    return [0, 25, 50, 75, 100];
-  }
-
-}
-
-// Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
-function openModal() {
-  document.getElementById('backdrop').style.display = 'block';
-  document.getElementById('exampleModalCenter').style.display = 'block';
-  document.getElementById('exampleModalCenter').classList.add('show');
-}
-
-// Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
-function closeModal() {
-  document.getElementById('backdrop').style.display = 'none';
-  document.getElementById('exampleModalCenter').style.display = 'none';
-  document.getElementById('exampleModalCenter').classList.remove('show');
-}
-
-// Adapted from Anna Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target === document.getElementById('exampleModalCenter')) {
-    closeModal();
-  }
-};
-
-function toggleNewHabitFormVisibility() {
-  if (newHabitFormVisibility) {
-    setTimeout(function() {
-      slideUp('form-container');
-    }, 200);
-    fadeOut('form-container');
-    document.querySelector('#plus-button').innerHTML = 'ADD HABIT +';
-    newHabitFormVisibility = false;
-  }
-  else {
-    setTimeout(function() {
-      fadeIn('form-container');
-    }, 200);
-    slideDown('form-container');
-    document.querySelector('#plus-button').innerHTML = 'ADD HABIT -';
-    newHabitFormVisibility = true;
-  }
-}
-
-// Adapted from https://codepen.io/NoName84/pen/aNbyyz
-function slideUp(id) {
-  var element = document.getElementById(id);
-  element.style.transition = "all 0.5s ease-in-out";
-  element.style.height = "0px";
-}
-
-// Adapted from https://codepen.io/NoName84/pen/aNbyyz
-function fadeOut(id) {
-  var element = document.getElementById(id);
-  element.style.transition = 'all 0.5s ease-in-out';
-  element.style.opacity = '0%';
-  element.style.visibility = 'hidden';
-}
-
-// Adapted from https://codepen.io/NoName84/pen/aNbyyz
-function slideDown(id) {
-  var element = document.getElementById(id);
-  element.style.transition = 'all 0.5s ease-in-out';
-  element.style.height = '240px';
-}
-
-// Adapted from https://codepen.io/NoName84/pen/aNbyyz
-function fadeIn(id) {
-  var element = document.getElementById(id);
-  element.style.transition = 'all 0.5s ease-in-out';
-  element.style.opacity = '100%';
-  element.style.visibility = 'visible';
-}
-
+// Load the next and previous calendar navigation buttons
 function loadCalendarNavButtons() {
   // By default (i.e. user is on current week), the next button should be disabled
   document.querySelector('#next-week-button').disabled = true;
@@ -410,6 +137,7 @@ function loadCalendarNavButtons() {
   };
 }
 
+// Loads the dates in the heading of the weekly calendar view
 function loadDates() {
   // Dict containing keys to the days of the week
   var daysDict = {
@@ -442,6 +170,7 @@ function loadDates() {
   }
 }
 
+// Loads the habit completion checkboxes
 function loadCheckboxes() {
   // For each checkbox image, load the appropriate checkbox image (unchecked/checked)
   document.querySelectorAll('.checkbox-image').forEach((checkbox) => {
@@ -463,6 +192,7 @@ function loadCheckboxes() {
   });
 }
 
+// Returns the date depending on the number of days ago
 function getDate(daysAgo) {
   // Get date from given number of days ago
   var today = luxon.DateTime.now();
@@ -470,6 +200,7 @@ function getDate(daysAgo) {
   return date;
 }
 
+// Set the habit completion checkboxes to filled or empty depending on current status
 function setCheckboxImage(habitId, columnKey, completionStatus) {
   // Set checkbox image to checked or unchecked depending on completion status
   if (completionStatus) {
@@ -480,6 +211,7 @@ function setCheckboxImage(habitId, columnKey, completionStatus) {
   }
 }
 
+// Toggle habit completion
 function toggleCompletion(doer, habitId, daysAgo) {
   // Get date from given number of days ago
   var date = getDate(daysAgo);
@@ -488,9 +220,6 @@ function toggleCompletion(doer, habitId, daysAgo) {
   fetch(`habitually/${doer}/${habitId}/${date}/toggle_status`)
   .then((response) => response.json())
   .then((data) => {
-    // Log data onto console
-    console.log(data);
-
     // Calculate column key of corresponding checkbox
     var columnKey = daysAgo - daysPerWeek * weeksAgo;
 
@@ -499,6 +228,7 @@ function toggleCompletion(doer, habitId, daysAgo) {
   });
 }
 
+// Load the delete button for each habit
 function loadDeleteButton() {
   // Create delete button image
   const deleteButton = document.createElement('img');
@@ -526,13 +256,11 @@ function loadDeleteButton() {
   });
 }
 
+// Delete the habit
 function deleteHabit(doer, habitId) {
   fetch(`habitually/${doer}/${habitId}/delete`)
   .then((response) => response.json())
   .then((data) => {
-    // Log data onto console
-    console.log(data);
-
     // Remove relevant elements and refresh page if success message is returned
     if ('message' in data) {
       document.querySelectorAll(`.habit-${habitId}`).forEach((element) => {
@@ -544,6 +272,7 @@ function deleteHabit(doer, habitId) {
   });
 }
 
+// Toggle the visibility of the category filter dropdown menu
 function toggleCategoryDropdownVisibility() {
   if (categoryDropdownVisibility) {
     // If dropdown is currently visible, hide it and set status to false
@@ -557,6 +286,7 @@ function toggleCategoryDropdownVisibility() {
   }
 }
 
+// Display the relevant habits for user-selected category from dropdown
 function displayCategory(category) {
   // Hide 'no habits' message
   document.querySelector('.no-habits-message').style.display = 'none';
@@ -590,5 +320,369 @@ function displayCategory(category) {
         element.style.display = 'block';
       });
     }
+  }
+}
+
+// Opens the select suggested habits modal
+// Adapted from A. Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
+function openModal() {
+  document.getElementById('backdrop').style.display = 'block';
+  document.getElementById('exampleModalCenter').style.display = 'block';
+  document.getElementById('exampleModalCenter').classList.add('show');
+}
+
+// Closes the select suggested habits modal
+// Adapted from A. Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
+function closeModal() {
+  document.getElementById('backdrop').style.display = 'none';
+  document.getElementById('exampleModalCenter').style.display = 'none';
+  document.getElementById('exampleModalCenter').classList.remove('show');
+}
+
+// When the user clicks anywhere outside of the modal, close it
+// Adapted from A. Aitchison https://dev.to/ara225/how-to-use-bootstrap-modals-without-jquery-3475
+window.onclick = function(event) {
+  if (event.target === document.getElementById('exampleModalCenter')) {
+    closeModal();
+  }
+};
+
+// Toggle new habit form visibility
+function toggleNewHabitFormVisibility() {
+  // Check if the new habit form is already visible
+  if (newHabitFormVisibility) {
+    // Hide the new habit form with animations
+    setTimeout(function() {
+      slideUp('form-container');
+    }, 200);
+    fadeOut('form-container');
+
+    // Update the innerHTML and global variable tracking visibility
+    document.querySelector('#plus-button').innerHTML = 'ADD HABIT +';
+    newHabitFormVisibility = false;
+  }
+  else {
+    // Show the new habit form with animations
+    setTimeout(function() {
+      fadeIn('form-container');
+    }, 200);
+    slideDown('form-container');
+
+    // Update the innerHTML and global variable tracking visibility
+    document.querySelector('#plus-button').innerHTML = 'ADD HABIT -';
+    newHabitFormVisibility = true;
+  }
+}
+
+// Slide up animation for closing new habit form
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function slideUp(id) {
+  var element = document.getElementById(id);
+  element.style.transition = "all 0.5s ease-in-out";
+  element.style.height = "0px";
+}
+
+// Fade out animation for closing new habit form
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function fadeOut(id) {
+  var element = document.getElementById(id);
+  element.style.transition = 'all 0.5s ease-in-out';
+  element.style.opacity = '0%';
+  element.style.visibility = 'hidden';
+}
+
+// Slide down animation for opening new habit form
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function slideDown(id) {
+  var element = document.getElementById(id);
+  element.style.transition = 'all 0.5s ease-in-out';
+  element.style.height = '240px';
+}
+
+// Fade in animation for new habit form
+// Adapted from https://codepen.io/NoName84/pen/aNbyyz
+function fadeIn(id) {
+  var element = document.getElementById(id);
+  element.style.transition = 'all 0.5s ease-in-out';
+  element.style.opacity = '100%';
+  element.style.visibility = 'visible';
+}
+
+// Load the profile view displaying user progress
+function loadProfile() {
+  fetch(`habitually/get_habit_count`)
+  .then((response) => response.json())
+  .then((data) => {
+    // Check if user has habits
+    if (data.habit_count > 0) {
+      // Get the ompletion streak data for the charts
+      getCompletionStreaksPerHabit('current');
+    }
+    else {
+      // Hide the weekly view and charts container
+      document.querySelector('#weekly-view-container').style.display = 'none';
+      document.querySelector('#charts-container').style.display = 'none';
+
+      // Display the 'no habits' message and profile container
+      document.querySelector('#no-habits-message-profile').style.display = 'block';
+      document.querySelector('#profile-container').style.display = 'block';
+    }
+  });
+}
+
+// Get the completion streaks for each habit (current or longest streak)
+function getCompletionStreaksPerHabit(streak) {
+  fetch(`habitually/completion_streaks_per_habit/${streak}`)
+  .then((response) => response.json())
+  .then((data) => {
+    // Store the habit IDs and streaks in variables
+    var habitIds = Object.keys(data);
+    var habitStreaks = Object.values(data);
+
+    // Create counter variable to access items in habitStreaks array
+    var counter = 0;
+
+    // For each habit
+    habitIds.forEach((habitId) => {
+      // Get the corresponding span tag
+      var span = document.querySelector(`#streak-${habitId}`);
+
+      // Depending on the number of days in streak, display 'day' or 'days'
+      if (habitStreaks[counter] === 1) {
+        // Display streaks in the correct order in the span tag
+        if (streak === 'current') {
+          span.innerHTML = `${habitStreaks[counter]} day | `;
+        }
+        else if (streak === 'longest') {
+          span.append(`${habitStreaks[counter]} day`);
+        }
+      }
+      else {
+        // Display streaks in the correct order in the span tag
+        if (streak === 'current') {
+          span.innerHTML = `${habitStreaks[counter]} days | `;
+        }
+        else if (streak === 'longest') {
+          span.append(`${habitStreaks[counter]} days`);
+        }
+      }
+
+      // Add to counter to move onto next item in array
+      counter += 1;
+    });
+  })
+  .then(() => {
+    // If streak is not longest (meaning it's the first run of function)
+    if (streak !== 'longest') {
+      // Run the function again to display longest streaks
+      getCompletionStreaksPerHabit('longest');
+    }
+    else {
+      // Get the completion rates for the next chart
+      getOverallHabitCompletionRates();
+    }
+  });
+}
+
+// Get the percentage of total habits that were completed per day
+function getOverallHabitCompletionRates() {
+  fetch(`habitually/overall_habit_completion_rate`)
+  .then((response) => response.json())
+  .then((data) => {
+    // For each rate, add it to the lineChartData array
+    data.forEach((rate) => {
+      lineChartData.push(rate);
+    });
+  })
+  .then(() => {
+    // Generate the line chart using the data
+    generateOverallCompletionRateChart();
+
+    // Get the rates for the next chart
+    getSevenDayHabitCompletionRates();
+  });
+}
+
+// Generate the overall completion rate line chart using C3's formatting
+function generateOverallCompletionRateChart() {
+  var lineChart = c3.generate({
+    // Select the ID to bind the chart to
+    bindto: '#overall-completion-rate-chart',
+
+    // Plug in last seven days and line chart data
+    data: {
+      x: 'x',
+      columns: [
+        getLastSevenDays(),
+        lineChartData
+      ],
+    },
+
+    // Set x and y axis details
+    axis: {
+      x: {
+        type: 'timeseries',
+        tick: {
+          // Convert x axis ticks to month/day
+          format: d3.timeFormat("%m/%d"),
+
+          // Hide outer ticks
+          outer: false,
+
+          // Display only alternating dates as ticks
+          values: getLineChartDateTicks()
+        }
+      },
+      y: {
+        label: {
+          // Text and positioning of y axis label
+          text: 'Percentage of Habits Completed (%)',
+          position: 'outer-middle'
+        }
+      },
+    },
+
+    // Hide the legend
+    legend: {
+      show: false
+    }
+  });
+}
+
+// Returns an array of the dates of the last 7 days
+function getLastSevenDays() {
+  for (var i = 6; i > -1; i--) {
+    var day = luxon.DateTime.now().minus({ days: i });
+    dayArray.push(day);
+  }
+  return dayArray;
+}
+
+// Returns a shortened version of the list of dates to display as ticks
+function getLineChartDateTicks() {
+  // Create an empty array to store date ticks
+  var lineChartDateTicks = [];
+  var counter = 1;
+
+  // For each date in the dayArray, add every other date
+  dayArray.forEach((date) => {
+    if (counter % 2 !== 0) {
+      lineChartDateTicks.push(date);
+    }
+    counter += 1;
+  });
+  return lineChartDateTicks;
+}
+
+// Get the habit names and corresponding completion rates in last 7 days
+function getSevenDayHabitCompletionRates() {
+  fetch(`habitually/seven_day_habit_completion_rates`)
+  .then((response) => response.json())
+  .then((data) => {
+    // For each habit, add the habit name and completion rate to corresponding lists
+    for (var habit in data) {
+      barChartHabits.push(habit);
+      barChartRates.push(data[habit]);
+    }
+  })
+  .then(() => {
+    // Generate the habit bar chart
+    generateHabitBarChart();
+
+    // Hide the weekly view container and display profile container
+    document.querySelector('#weekly-view-container').style.display = 'none';
+    document.querySelector('#profile-container').style.display = 'block';
+  });
+}
+
+// Generate the overall completion rate line chart using C3's formatting
+function generateHabitBarChart() {
+  var barChart = c3.generate({
+    // Select the ID to bind the chart to
+    bindto: '#habit-bar-chart',
+
+    // Set bar width
+    bar: {
+      width: {
+        ratio: 0.5
+      }
+    },
+
+    // Add padding to make space for habit names
+    padding: {
+      left: 110
+    },
+
+    // Set color of bars
+    color: {
+      pattern: ['#7FB3D5']
+    },
+
+    // Plug in habits and rates as bar chart data
+    data: {
+      x: 'x',
+      type: 'bar',
+      columns: [
+        barChartHabits,
+        barChartRates
+      ]
+    },
+
+    // Set x and y axis details
+    axis: {
+      // Make bar chart horizontal
+      rotated: true,
+      x: {
+          type: 'category',
+      },
+      y: {
+        // Text and positioning of y axis label
+        label: {
+          text: 'Completion Rate (%)',
+          position: 'outer-middle'
+        },
+        tick: {
+          // Hide outer ticks
+          outer: false,
+          // Display only certain percentages as ticks
+          values: getBarChartRateTicks()
+        },
+      },
+    },
+    tooltip: {
+      grouped: false
+    },
+
+    // Hide legend
+    legend: {
+      show: false
+    }
+  });
+}
+
+// Returns specific percentages to display as ticks
+function getBarChartRateTicks() {
+  var counter = 0;
+  var allZeroRates = true;
+
+  // For each bar chart rate
+  barChartRates.forEach((rate) => {
+    if (counter > 0) {
+      // If a non-zero completion rate shows up, set allZeroRates to false
+      if (rate != 0) {
+        allZeroRates = false;
+      }
+    }
+    counter += 1;
+  });
+
+  // Check if the array of rates only contains '0%' completion rates (no completions)
+  if (allZeroRates) {
+    // Return 0
+    return 0;
+  }
+  else {
+    // Return specific percentages from 0 to 100
+    return [0, 25, 50, 75, 100];
   }
 }

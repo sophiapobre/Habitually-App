@@ -1,14 +1,16 @@
 {% extends "habitually/layout.html" %}
 
 {% block body %}
-
+    <!-- Adapted from previous CSCI E-33a projects -->
     <div class="container">
         <h2>Login</h2>
 
+        {# Display authentication error message #}
         {% if message %}
             <div>{{ message }}</div>
         {% endif %}
 
+        <!-- Form to log in -->
         <form action="{% url 'login' %}" method="post">
             {% csrf_token %}
             <div class="form-group">

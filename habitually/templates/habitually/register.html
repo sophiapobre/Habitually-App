@@ -1,14 +1,16 @@
 {% extends "habitually/layout.html" %}
 
 {% block body %}
-
+    <!-- Adapted from previous CSCI E-33a projects -->
     <div class="container">
         <h2>Register</h2>
 
+        {# Display authentication error message #}
         {% if message %}
             <div>{{ message }}</div>
         {% endif %}
 
+        <!-- Form to register -->
         <form action="{% url 'register' %}" method="post">
             {% csrf_token %}
             <div class="form-group">
@@ -26,6 +28,6 @@
             <input class="btn btn-dark" type="submit" value="Register">
         </form><br>
 
-        Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+        Have an account? <a href="{% url 'login' %}">Log in here.</a>
     </div>
 {% endblock %}

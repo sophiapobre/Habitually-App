@@ -2,37 +2,44 @@
 
 <!DOCTYPE html>
 <html lang="en">
+    <!-- Adapted from previous CSCI E-33a projects -->
     <head>
+        <!-- Set scale for mobile devices-->
         <meta name="viewport" content="initial-scale=1, width=device-width">
+
         <title>{% block title %}Habitually{% endblock %}</title>
+
+        <!-- Link Bootstrap -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+        <!-- Link static files -->
         <link href="{% static 'habitually/styles.css' %}" rel="stylesheet">
         <script src="{% static 'habitually/main_app.js' %}"></script>
         <script src="{% static 'habitually/luxon.js' %}"></script>
+
+        <!-- Link Google Fonts for font display -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+        <!-- Link C3 and D3 files for charts -->
         <link href="{% static 'habitually/c3-0.7.20/c3.css' %}" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
         <script src="{% static 'habitually/c3-0.7.20/c3.min.js' %}"></script>
     </head>
     <body>
-
+        <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-dark">
             <span class="navbar-brand" href="" id="habitually-navbar">Habitually</span>
 
             <div>
               <ul class="navbar-nav mr-auto">
+
+                {# If user is signed in, display username, app links, and Logout view link #}
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                             <span class="nav-link" href="#" id="logged-user">Hello, <strong>{{ user.username }}!</strong></span>
                     </li>
-                {% else %}
-                    <li class="nav-item">
-                    <a class="nav-link" href="{% url 'index' %}">Home</a>
-                    </li>
-                {% endif %}
-                {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'main_app' %}" id="tracker-link">Tracker</a>
                     </li>
@@ -42,7 +49,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
                     </li>
+
+                {# Display link to Homepage, Login, and Register views #}
                 {% else %}
+                    <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index' %}">Home</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Log In</a>
                     </li>
