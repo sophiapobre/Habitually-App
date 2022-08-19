@@ -10,7 +10,7 @@ View a live demo [here](https://habitually-app.herokuapp.com).
 * [Setup](#setup)
 
 ## Technologies Used
-* Django version 3.2.7
+* Django version 4.1
 * Python version 3.9.7
 * JavaScript
 * HTML
