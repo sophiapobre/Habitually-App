@@ -1,0 +1,364 @@
+
+/* Color of navbar */
+.navbar {
+    background-color: #000000!important;
+}
+
+/* Font of navbar links */
+.nav-link, .navbar-brand {
+    color: #ffffff!important;
+}
+
+/* Formatting for new habit form */
+.form-container {
+    visibility: hidden;
+    margin: 40px auto;
+    height: 0px;
+    opacity: 0%;
+    clear: both;
+}
+
+/* Positioning for h4 tags */
+h3, h4 {
+    margin: 15px auto;
+}
+
+/* Formatting for new habit textarea */
+textarea {
+    resize: none;
+}
+
+/* Formatting for add button */
+#add-button {
+    margin: 10px auto;
+}
+
+/* Formatting for error message */
+.error-message {
+    font-weight: 500;
+    font-size: small;
+    color: rgb(167, 8, 8);
+}
+
+/* Formatting for category dropdown menu and nav buttons */
+.category-dropdown-button, .weekly-calendar-nav {
+    height: 30px;
+    line-height: 15px;
+    margin-top: 15px;
+    margin-right: 3px;
+    margin-bottom: 15px;
+}
+
+/* Cursor when hovering on disabled next week button */
+#next-week-button:disabled {
+    cursor: not-allowed;
+}
+
+/* Formatting for category dropdown list */
+.category-dropdown-button {
+    font-size: 13px;
+    margin-right: 10px;
+}
+
+/* Positioning for weekly calendar habit grid */
+.calendar {
+    margin-top: 20px;
+}
+
+/* Formatting for weekly calendar habit grid */
+.calendar-first-row, .habit-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    font-weight: 500;
+    height: 50px;
+}
+
+/* Formatting for weekly calendar habit grid */
+.habit-grid {
+    margin-bottom: 100px;
+    height: min-content;
+}
+
+/* Positioning for first column of calendar */
+.calendar-first-column {
+    width: 200px;
+}
+
+/* Positioning for day headings */
+.day {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+/* Formatting for habit names */
+.habit {
+    width: 200px;
+    padding-right: 10px;
+}
+
+/* Cursor when hovering on habit names */
+.habit:hover {
+    cursor: pointer;
+}
+
+/* Positioning for divs inside the habit grid */
+.habit-grid div {
+    position: relative;
+    margin-top: 12px;
+}
+
+/* Positioning for checkboxes */
+.checkbox {
+    margin-left: 40%;
+    margin-top: 10%;
+}
+
+/* Formatting for checkbox images */
+.checkbox-image {
+    height: 25px;
+}
+
+/* Cursor when hovering on checkbox images */
+.checkbox-image:hover {
+    cursor: pointer;
+}
+
+/* Width of delete button */
+.delete-button-container {
+    width: 80px;
+}
+
+/* Additional margin for buttons */
+.btn {
+    margin-top: 10px;
+}
+
+/* Formatting for delete button */
+.delete-button {
+    float: inline-start;
+    height: 20px;
+    background-color: rgb(218, 211, 211);
+    border-radius: 50%;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* Cursor for when hovering on delete button */
+.delete-button:hover {
+    cursor: pointer;
+}
+
+/* Formatting for no habits message when filtering */
+.no-habits-message {
+    display: none;
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+/* Additional formatting for body */
+body {
+    padding-bottom: 240px;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Button formatting for add habit button in new habit form */
+.add-habit-button-container {
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    clear: both;
+}
+
+/* Button formatting inside add habit button container */
+.add-habit-button-container > button {
+    display: inline;
+    float: right;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: small;
+    border-radius: 15px;
+}
+
+/* By default, hide the profile container */
+#profile-container {
+    display: none;
+    width: 100%;
+}
+
+/* Positioning for no habits message on profile */
+#no-habits-message-profile {
+    display: none;
+    text-align: center;
+}
+
+/* Additional margins for error message alerts */
+.alert-danger {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Background video on homepage */
+#background-video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+/* Additional formatting for h1, h2 */
+h1, h2 {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Additional formatting for h1 */
+h1 {
+    font-size: 2.5rem;
+    margin-top: 30vh;
+
+}
+
+/* Additional formatting for h2 */
+h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+/* Cursor for the website title and username in navbar */
+#habitually-navbar, #logged-user {
+    cursor: default;
+}
+
+/* Cursor when the add suggested habit button is disabled */
+#add-suggested-habit-button:disabled {
+    cursor: not-allowed;
+}
+
+/* Font size for list group items */
+.list-group-item {
+    font-size: 14px;
+}
+
+/* Scaling down weekly calendar view when window is resized */
+@media only screen and (max-width: 770px) {
+    .day, .checkbox {
+        transform: scale(0.80);
+        transform-origin: 0 0 0;
+        width: 80%;
+    }
+}
+
+/* By default, hide the 'date only' calendar heading */
+.date-only {
+    display: none;
+}
+
+/* Media queries adjusting weekly calendar view for smaller screen sizes */
+
+@media only screen and (max-width: 770px) {
+    .checkbox {
+        margin-left: 10px;
+    }
+}
+
+@media only screen and (max-width: 570px) {
+    .date-and-day {
+        display: none;
+    }
+    .date-only {
+        display: block;
+        margin-left: 7px;
+    }
+}
+
+@media only screen and (max-width: 526px) {
+    .checkbox {
+        margin-left: 24%;
+    }
+}
+
+@media only screen and (max-width: 483px) {
+    .date-only {
+        transform: scale(0.77);
+        transform-origin: 0 0 0;
+        width: 77%;
+        margin-left: 26%;
+    }
+}
+
+@media only screen and (max-width: 455px) {
+    .date-only {
+        margin-left: 8px;
+    }
+    .habit, .calendar-first-column {
+        width: 180px;
+        font-size: 14px;
+    };
+}
+
+@media only screen and (max-width: 430px) {
+    .habit, .calendar-first-column {
+        width: 150px;
+        font-size: 13px;
+    };
+}
+
+@media only screen and (max-width: 406px) {
+    .date-only {
+        margin-left: 7px;
+    }
+    .habit, .calendar-first-column {
+        width: 150px;
+        font-size: 13px;
+    };
+}
+
+@media only screen and (max-width: 380px) {
+    .habit, .calendar-first-column {
+        width: 100px;
+        font-size: 13px;
+    };
+}
+
+@media only screen and (max-width: 352px) {
+    .date-only {
+        margin-left: 6.5px;
+    }
+    .habit, .calendar-first-column {
+        width: 100px;
+        font-size: 13px;
+    };
+}
+
+@media only screen and (max-width: 330px) {
+    .habit, .calendar-first-column {
+        width: 80px;
+        font-size: 13px;
+    };
+}
+
+@media only screen and (max-width: 308px) {
+    .habit, .calendar-first-column {
+        width: 60px;
+        font-size: 13px;
+    };
+}
+
+@media only screen and (max-width: 290px) {
+    .habit, .calendar-first-column {
+        width: 50px;
+        font-size: 11px;
+    };
+}
