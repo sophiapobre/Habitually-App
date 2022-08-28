@@ -1,7 +1,7 @@
 # Habitually
 Habitually is a habit tracker that makes building healthy habits simple. With its sleek, user-friendly interface and data visualizations to track completion rates and streaks, Habitually sets users up for long-term success.
 
-View a live demo [here](https://habitually-app.herokuapp.com).
+View a live demo [here](https://habitually.applikuapp.com).
 
 ## Table of Contents
 * [Technologies Used](#technologies-used)
